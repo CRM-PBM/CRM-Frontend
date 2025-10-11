@@ -1,9 +1,8 @@
-// CRM-frontend/src/pages/LoginPage.jsx
-
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { FaSignInAlt, FaSpinner } from 'react-icons/fa';
+import { toast } from 'react-toastify';
 
 const API_BASE_URL = 'http://localhost:3000/api';
 
@@ -32,10 +31,13 @@ const LoginPage = () => {
             localStorage.setItem('token', res.data.token);
             localStorage.setItem('user', JSON.stringify(res.data.user));
 
-            alert('Login berhasil! Anda akan diarahkan ke Dashboard.');
-            navigate('/dashboard'); // Arahkan ke halaman utama/dashboard
+            toast.success('Anda berhasil masuk!.', {
+                position: "top-center"
+            });
+            navigate('/dashboard'); 
         } catch (err) {
-            setError(err.response?.data?.msg || 'Login gagal. Coba periksa kembali email dan password Anda.');
+            const errMsg = err.response?.data?.msg || 'Login gagal. Coba periksa kembali email dan password Anda.'
+            toast.error(errMsg);
         } finally {
             setLoading(false);
         }
@@ -63,11 +65,11 @@ const LoginPage = () => {
                     )}
 
                     <div className="mb-4">
-                        <label className="block text-slate-800 text-sm font-semibold mb-2" htmlFor="email">Email</label>
+                        <label className="block text-slate-800 text-sm font-semibold mb-2" htmlFor="email">Email UMKM</label>
                         <input
                             type="email" name="email" value={formData.email} onChange={handleChange}
                             className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 transition duration-150"
-                            placeholder="email@contoh.com" required
+                            placeholder="Masukan email UMKM Anda" required
                         />
                     </div>
                     <div className="mb-6">

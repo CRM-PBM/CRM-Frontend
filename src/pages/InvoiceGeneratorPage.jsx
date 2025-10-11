@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { FaFilePdf, FaRedo } from 'react-icons/fa'; 
+import { toast } from 'react-toastify';
 const API_BASE_URL = 'http://localhost:3000/api';
 
 // Helper function untuk mendapatkan header dengan token JWT
@@ -29,7 +30,7 @@ const InvoiceGeneratorPage = () => {
         
         const headers = getAuthHeaders();
         if (!headers) {
-            setError('Anda harus login terlebih dahulu.');
+            toast.error('Anda harus login terlebih dahulu untuk membuat invoice.', { position: "top-center" });
             return;
         }
 
@@ -46,13 +47,11 @@ const InvoiceGeneratorPage = () => {
             );
 
             setMessage(res.data.msg);
-            // URL download penuh (misal: http://localhost:3000/invoices/INV-1-2025-0001.pdf)
-            // Ganti /api menjadi base url jika backend Anda hanya melayani static di base path
             setDownloadUrl(`${API_BASE_URL.replace('/api', '')}${res.data.download_url}`); 
             
         } catch (err) {
             const errMsg = err.response?.data?.msg || 'Gagal membuat Invoice. Cek Konsol.';
-            setError(errMsg);
+            toast.error(errMsg);
         } finally {
             setLoading(false);
         }
@@ -98,10 +97,7 @@ const InvoiceGeneratorPage = () => {
                 {/* Area Hasil / Notifikasi */}
                 <div className="mt-8 p-4 border rounded-lg">
                     {error && (
-                        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4" role="alert">
-                            <p className="font-bold">Gagal!</p>
-                            <p className="text-sm">{error}</p>
-                        </div>
+                        toast.error('Gagal!', { position: "top-center" })
                     )}
 
                     {message && (

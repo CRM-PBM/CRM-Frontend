@@ -2,6 +2,8 @@
 
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 // Import komponen-komponen yang telah kita buat
 import LoginPage from './pages/LoginPage';
@@ -56,7 +58,19 @@ function App() {
 
                 {/* Route untuk 404 Not Found (Opsional) */}
                 <Route path="*" element={<h1 className="text-center mt-20">404: Halaman Tidak Ditemukan</h1>} />
+
             </Routes>
+                <ToastContainer 
+                    position="top-right" 
+                    autoClose={2500} 
+                    hideProgressBar={false} 
+                    newestOnTop={false} 
+                    closeOnClick 
+                    rtl={false} 
+                    pauseOnFocusLoss 
+                    draggable 
+                    pauseOnHover 
+                />
         </Router>
     );
 }

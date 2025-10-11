@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { FaUserPlus, FaSpinner } from 'react-icons/fa';
+import { toast } from 'react-toastify';
 
 const API_BASE_URL = 'http://localhost:3000/api';
 
@@ -34,10 +35,12 @@ const RegisterPage = () => {
             localStorage.setItem('token', res.data.token);
             localStorage.setItem('user', JSON.stringify(res.data.user));
 
-            alert('Registrasi berhasil! Anda akan diarahkan ke Login.');
+            toast.success('🎉 Registrasi berhasil! Selamat datang di UMKM.CRM.', {
+                position: "top-center" })
             navigate('/login');
         } catch (err) {
-            setError(err.response?.data?.msg || 'Registrasi gagal. Coba periksa koneksi atau data.');
+            const errMsg = err.response?.data?.msg || 'Registrasi gagal. Coba periksa koneksi atau data.';
+            toast.error(errMsg);
         } finally {
             setLoading(false);
         }
