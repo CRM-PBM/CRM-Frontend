@@ -18,7 +18,7 @@ export default function Header() {
           <a href="#features" className="text-slate-600 hover:text-slate-900 transition">Fitur</a>
           <a href="#pricing" className="text-slate-600 hover:text-slate-900 transition">Harga</a>
           <a href="#about" className="text-slate-600 hover:text-slate-900 transition">Tentang Kami</a>
-          <a href="#" className="inline-flex items-center gap-2 bg-gradient-to-r from-sky-500 to-sky-600 text-white font-semibold px-4 py-2 rounded-lg shadow">Masuk</a>
+          <a href="/login" className="inline-flex items-center gap-2 bg-gradient-to-r from-sky-500 to-sky-600 text-white font-semibold px-4 py-2 rounded-lg shadow">Masuk</a>
         </nav>
 
         <button className="md:hidden" onClick={() => setIsMenuOpen(!isMenuOpen)} aria-label="Toggle menu">
@@ -33,6 +33,7 @@ export default function Header() {
             <a href="#pricing" className="text-slate-700">Harga</a>
             <a href="#about" className="text-slate-700">Tentang Kami</a>
             <a href="/dashboard" className="mt-2 inline-flex items-center justify-center bg-sky-500 text-white font-semibold px-4 py-2 rounded-lg">Dashboard</a>
+            <a href="/login" className="mt-2 inline-flex items-center justify-center bg-gradient-to-r from-sky-500 to-sky-600 text-white font-semibold px-4 py-2 rounded-lg">Masuk</a>
           </nav>
         </div>
       )}

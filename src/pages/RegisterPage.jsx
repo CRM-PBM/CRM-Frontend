@@ -1,13 +1,11 @@
-import React, { useState } from 'react';
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
-import { FaUserPlus, FaSpinner } from 'react-icons/fa';
-import { toast } from 'react-toastify';
-
-const API_BASE_URL = 'http://localhost:3000/api';
+import React, { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { FaUserPlus, FaSpinner } from 'react-icons/fa'
+import { toast } from 'react-toastify'
+import { authService } from '../services/authService'
 
 const RegisterPage = () => {
-    const navigate = useNavigate();
+    const navigate = useNavigate()
     const [formData, setFormData] = useState({
         email: '',
         password: '',
@@ -15,36 +13,37 @@ const RegisterPage = () => {
         nama_umkm: '',
         telepon: '',
         alamat: '',
-    });
-    const [error, setError] = useState('');
-    const [loading, setLoading] = useState(false);
+    })
+    const [error, setError] = useState('')
+    const [loading, setLoading] = useState(false)
 
     const handleChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
-    };
+        setFormData({ ...formData, [e.target.name]: e.target.value })
+    }
 
     const handleSubmit = async (e) => {
-        e.preventDefault();
-        setError('');
-        setLoading(true);
+        e.preventDefault()
+        setError('')
+        setLoading(true)
 
         try {
-            const res = await axios.post(`${API_BASE_URL}/auth/register`, formData);
-            
+            const res = await authService.register(formData)
+
             // Simpan token & data user
-            localStorage.setItem('token', res.data.token);
-            localStorage.setItem('user', JSON.stringify(res.data.user));
+            localStorage.setItem('token', res.token)
+            localStorage.setItem('user', JSON.stringify(res.user))
 
             toast.success('🎉 Registrasi berhasil! Selamat datang di UMKM.CRM.', {
-                position: "top-center" })
-            navigate('/login');
+                position: "top-center"
+            })
+            navigate('/login')
         } catch (err) {
-            const errMsg = err.response?.data?.msg || 'Registrasi gagal. Coba periksa koneksi atau data.';
-            toast.error(errMsg);
+            const errMsg = err.response?.data?.msg || 'Registrasi gagal. Coba periksa koneksi atau data.'
+            toast.error(errMsg)
         } finally {
-            setLoading(false);
+            setLoading(false)
         }
-    };
+    }
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">

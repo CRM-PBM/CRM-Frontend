@@ -1,47 +1,56 @@
-import React, { useState } from 'react';
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
-import { FaSignInAlt, FaSpinner } from 'react-icons/fa';
-import { toast } from 'react-toastify';
-
-const API_BASE_URL = 'http://localhost:3000/api';
+import React, { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { FaSignInAlt, FaSpinner } from 'react-icons/fa'
+import { toast } from 'react-toastify'
+import { authService } from '../services/authService'
 
 const LoginPage = () => {
-    const navigate = useNavigate();
+    const navigate = useNavigate()
     const [formData, setFormData] = useState({
         email: '',
         password: '',
-    });
-    const [error, setError] = useState('');
-    const [loading, setLoading] = useState(false);
+    })
+    const [error, setError] = useState('')
+    const [loading, setLoading] = useState(false)
 
     const handleChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
-    };
+        setFormData({ ...formData, [e.target.name]: e.target.value })
+    }
 
     const handleSubmit = async (e) => {
-        e.preventDefault();
-        setError('');
-        setLoading(true);
+        e.preventDefault()
+        setError('')
+        setLoading(true)
 
         try {
-            const res = await axios.post(`${API_BASE_URL}/auth/login`, formData);
-            
-            // Simpan token & data user
-            localStorage.setItem('token', res.data.token);
-            localStorage.setItem('user', JSON.stringify(res.data.user));
+            const res = await authService.login(formData)
+            console.log('Login response:', res)
 
-            toast.success('Anda berhasil masuk!.', {
+            // Simpan token & data user
+            if (res.token) {
+                localStorage.setItem('token', res.token)
+                console.log('Token saved to localStorage')
+            } else {
+                console.error('No token in response')
+            }
+
+            if (res.user) {
+                localStorage.setItem('user', JSON.stringify(res.user))
+                console.log('User data saved to localStorage')
+            }
+
+            toast.success('Anda berhasil masuk!', {
                 position: "top-center"
-            });
-            navigate('/dashboard'); 
+            })
+            navigate('/dashboard')
         } catch (err) {
+            console.error('Login error:', err)
             const errMsg = err.response?.data?.msg || 'Login gagal. Coba periksa kembali email dan password Anda.'
-            toast.error(errMsg);
+            toast.error(errMsg)
         } finally {
-            setLoading(false);
+            setLoading(false)
         }
-    };
+    }
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
