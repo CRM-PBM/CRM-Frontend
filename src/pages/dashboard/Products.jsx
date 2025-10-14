@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react'
 import { toast } from 'react-toastify'
-import { pelangganService } from '../../services/pelangganService'
-import { User, Phone, Mail, MapPin, Edit2, Trash2, Plus, Search, Loader, ChevronLeft, ChevronRight } from 'lucide-react'
+import { produkService } from '../../services/produkService'
+import { Package, DollarSign, Edit2, Trash2, Plus, Search, Loader, ChevronLeft, ChevronRight, TrendingUp, AlertCircle, CheckCircle, XCircle } from 'lucide-react'
 
-export default function Customers(){
+export default function Products(){
   const [list, setList] = useState([])
   const [loading, setLoading] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
@@ -11,26 +11,26 @@ export default function Customers(){
   const [totalPages, setTotalPages] = useState(1)
   const [totalItems, setTotalItems] = useState(0)
   const [itemsPerPage] = useState(10)
+  const [statistics, setStatistics] = useState(null)
   const [form, setForm] = useState({
-    nama: '',
-    telepon: '',
-    email: '',
-    alamat: '',
-    gender: 'Pria',
-    level: 'Silver'
+    nama_produk: '',
+    harga: '',
+    stok: '0',
+    aktif: true
   })
   const [editMode, setEditMode] = useState(false)
   const [editId, setEditId] = useState(null)
 
   useEffect(() => {
-    loadPelanggan()
+    loadProduk()
+    loadStatistics()
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage])
 
-  async function loadPelanggan() {
+  async function loadProduk() {
     setLoading(true)
     try {
-      const response = await pelangganService.getAll({ 
+      const response = await produkService.getAll({ 
         page: currentPage, 
         limit: itemsPerPage 
       })
@@ -40,52 +40,68 @@ export default function Customers(){
         setTotalItems(response.total || 0)
       }
     } catch (error) {
-      console.error('Error loading pelanggan:', error)
-      toast.error('Gagal memuat data pelanggan')
+      console.error('Error loading produk:', error)
+      toast.error('Gagal memuat data produk')
     } finally {
       setLoading(false)
     }
   }
 
+  async function loadStatistics() {
+    try {
+      const response = await produkService.getStatistics()
+      if (response.success) {
+        setStatistics(response.data)
+      }
+    } catch (error) {
+      console.error('Error loading statistics:', error)
+    }
+  }
+
   async function handleSubmit(e) {
     e.preventDefault()
-    if (!form.nama || !form.telepon) {
-      toast.error('Nama dan telepon wajib diisi')
+    if (!form.nama_produk || !form.harga) {
+      toast.error('Nama produk dan harga wajib diisi')
       return
     }
 
     setLoading(true)
     try {
+      const dataToSend = {
+        ...form,
+        harga: parseFloat(form.harga),
+        stok: parseInt(form.stok) || 0
+      }
+
       if (editMode) {
-        const response = await pelangganService.update(editId, form)
+        const response = await produkService.update(editId, dataToSend)
         if (response.success) {
-          toast.success('Pelanggan berhasil diupdate')
+          toast.success('Produk berhasil diupdate')
           setEditMode(false)
           setEditId(null)
         }
       } else {
-        const response = await pelangganService.create(form)
+        const response = await produkService.create(dataToSend)
         if (response.success) {
-          toast.success('Pelanggan berhasil ditambahkan')
+          toast.success('Produk berhasil ditambahkan')
         }
       }
       
       // Reset form
       setForm({
-        nama: '',
-        telepon: '',
-        email: '',
-        alamat: '',
-        gender: 'Pria',
-        level: 'Silver'
+        nama_produk: '',
+        harga: '',
+        stok: '0',
+        aktif: true
       })
       
       // Reload data
-      setCurrentPage(1) // Reset to first page
-      await loadPelanggan()
+      setCurrentPage(1)
+      await loadProduk()
+      await loadStatistics()
     } catch (error) {
-      console.error('Error saving pelanggan:', error)
-      const errorMsg = error.response?.data?.message || 'Gagal menyimpan pelanggan'
+      console.error('Error saving produk:', error)
+      const errorMsg = error.response?.data?.message || 'Gagal menyimpan produk'
       toast.error(errorMsg)
     } finally {
       setLoading(false)
@@ -93,40 +109,54 @@ export default function Customers(){
   }
 
   async function handleDelete(id) {
-    if (!confirm('Apakah Anda yakin ingin menghapus pelanggan ini?')) return
+    if (!confirm('Apakah Anda yakin ingin menghapus produk ini?')) return
 
     setLoading(true)
     try {
-      const response = await pelangganService.delete(id)
+      const response = await produkService.delete(id)
       if (response.success) {
-        toast.success('Pelanggan berhasil dihapus')
-        // If deleting last item on page, go to previous page
+        toast.success('Produk berhasil dihapus')
         if (list.length === 1 && currentPage > 1) {
           setCurrentPage(currentPage - 1)
         } else {
-          await loadPelanggan()
+          await loadProduk()
         }
+        await loadStatistics()
       }
     } catch (error) {
-      console.error('Error deleting pelanggan:', error)
-      toast.error('Gagal menghapus pelanggan')
+      console.error('Error deleting produk:', error)
+      toast.error('Gagal menghapus produk')
     } finally {
       setLoading(false)
     }
   }
 
-  function handleEdit(pelanggan) {
+  async function handleToggleActive(id, currentStatus) {
+    setLoading(true)
+    try {
+      const response = await produkService.toggleActive(id)
+      if (response.success) {
+        toast.success(`Produk ${currentStatus ? 'dinonaktifkan' : 'diaktifkan'}`)
+        await loadProduk()
+        await loadStatistics()
+      }
+    } catch (error) {
+      console.error('Error toggling active:', error)
+      toast.error('Gagal mengubah status produk')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  function handleEdit(produk) {
     setEditMode(true)
-    setEditId(pelanggan.pelanggan_id)
+    setEditId(produk.produk_id)
     setForm({
-      nama: pelanggan.nama || '',
-      telepon: pelanggan.telepon || '',
-      email: pelanggan.email || '',
-      alamat: pelanggan.alamat || '',
-      gender: pelanggan.gender || 'Pria',
-      level: pelanggan.level || 'Silver'
+      nama_produk: produk.nama_produk || '',
+      harga: produk.harga?.toString() || '',
+      stok: produk.stok?.toString() || '0',
+      aktif: produk.aktif !== false
     })
-    // Scroll to form
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
@@ -134,21 +164,26 @@ export default function Customers(){
     setEditMode(false)
     setEditId(null)
     setForm({
-      nama: '',
-      telepon: '',
-      email: '',
-      alamat: '',
-      gender: 'Pria',
-      level: 'Silver'
+      nama_produk: '',
+      harga: '',
+      stok: '0',
+      aktif: true
     })
   }
 
-  // Filter pelanggan based on search (client-side filtering)
+  // Format currency
+  const formatCurrency = (value) => {
+    return new Intl.NumberFormat('id-ID', {
+      style: 'currency',
+      currency: 'IDR',
+      minimumFractionDigits: 0
+    }).format(value)
+  }
+
+  // Filter produk based on search
   const filteredList = searchTerm
-    ? list.filter(c => 
-        c.nama?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        c.telepon?.includes(searchTerm) ||
-        c.email?.toLowerCase().includes(searchTerm.toLowerCase())
+    ? list.filter(p => 
+        p.nama_produk?.toLowerCase().includes(searchTerm.toLowerCase())
       )
     : list
 
@@ -157,126 +192,151 @@ export default function Customers(){
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-2xl font-bold text-slate-900">Manajemen Pelanggan</h3>
-          <p className="text-sm text-slate-500 mt-1">Kelola data pelanggan UMKM Anda</p>
-        </div>
-        <div className="flex items-center gap-2 text-sm text-slate-600">
-          <User className="h-4 w-4" />
-          <span className="font-medium">{list.length} Pelanggan</span>
+          <h3 className="text-2xl font-bold text-slate-900">Manajemen Produk</h3>
+          <p className="text-sm text-slate-500 mt-1">Kelola produk dan stok UMKM Anda</p>
         </div>
       </div>
+
+      {/* Statistics Cards */}
+      {statistics && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-sky-100 rounded-lg">
+                <Package className="h-5 w-5 text-sky-600" />
+              </div>
+              <div>
+                <p className="text-sm text-slate-600">Total Produk</p>
+                <p className="text-2xl font-bold text-slate-900">{statistics.total_produk || 0}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-green-100 rounded-lg">
+                <CheckCircle className="h-5 w-5 text-green-600" />
+              </div>
+              <div>
+                <p className="text-sm text-slate-600">Produk Aktif</p>
+                <p className="text-2xl font-bold text-slate-900">{statistics.produk_aktif || 0}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-amber-100 rounded-lg">
+                <TrendingUp className="h-5 w-5 text-amber-600" />
+              </div>
+              <div>
+                <p className="text-sm text-slate-600">Total Stok</p>
+                <p className="text-2xl font-bold text-slate-900">{statistics.total_stok || 0}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-purple-100 rounded-lg">
+                <DollarSign className="h-5 w-5 text-purple-600" />
+              </div>
+              <div>
+                <p className="text-sm text-slate-600">Nilai Inventori</p>
+                <p className="text-lg font-bold text-slate-900">
+                  {formatCurrency(statistics.nilai_inventori || 0)}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Form Card */}
       <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
         <div className="flex items-center gap-2 mb-4">
           <Plus className="h-5 w-5 text-sky-600" />
           <h4 className="font-semibold text-slate-900">
-            {editMode ? 'Edit Pelanggan' : 'Tambah Pelanggan Baru'}
+            {editMode ? 'Edit Produk' : 'Tambah Produk Baru'}
           </h4>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Nama */}
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
-                Nama Pelanggan <span className="text-red-500">*</span>
-              </label>
-              <div className="relative">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                <input
-                  type="text"
-                  value={form.nama}
-                  onChange={e => setForm({...form, nama: e.target.value})}
-                  placeholder="Contoh: John Doe"
-                  required
-                  className="w-full pl-10 pr-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
-                />
-              </div>
-            </div>
-
-            {/* Telepon */}
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
-                No. Telepon <span className="text-red-500">*</span>
-              </label>
-              <div className="relative">
-                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                <input
-                  type="tel"
-                  value={form.telepon}
-                  onChange={e => setForm({...form, telepon: e.target.value})}
-                  placeholder="Contoh: 08123456789"
-                  required
-                  className="w-full pl-10 pr-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
-                />
-              </div>
-            </div>
-
-            {/* Email */}
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
-                Email
-              </label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                <input
-                  type="email"
-                  value={form.email}
-                  onChange={e => setForm({...form, email: e.target.value})}
-                  placeholder="Contoh: john@example.com"
-                  className="w-full pl-10 pr-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
-                />
-              </div>
-            </div>
-
-            {/* Gender */}
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
-                Jenis Kelamin
-              </label>
-              <select
-                value={form.gender}
-                onChange={e => setForm({...form, gender: e.target.value})}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
-              >
-                <option value="Pria">Pria</option>
-                <option value="Wanita">Wanita</option>
-              </select>
-            </div>
-
-            {/* Alamat */}
+            {/* Nama Produk */}
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-slate-700 mb-1">
-                Alamat
+                Nama Produk <span className="text-red-500">*</span>
               </label>
               <div className="relative">
-                <MapPin className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
-                <textarea
-                  value={form.alamat}
-                  onChange={e => setForm({...form, alamat: e.target.value})}
-                  placeholder="Contoh: Jl. Sudirman No. 123, Jakarta"
-                  rows={2}
-                  className="w-full pl-10 pr-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent resize-none"
+                <Package className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                <input
+                  type="text"
+                  value={form.nama_produk}
+                  onChange={e => setForm({...form, nama_produk: e.target.value})}
+                  placeholder="Contoh: Kopi Arabica Premium"
+                  required
+                  className="w-full pl-10 pr-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
                 />
               </div>
             </div>
 
-            {/* Level */}
+            {/* Harga */}
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">
-                Level Pelanggan
+                Harga <span className="text-red-500">*</span>
               </label>
-              <select
-                value={form.level}
-                onChange={e => setForm({...form, level: e.target.value})}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
-              >
-                <option value="Bronze">Bronze</option>
-                <option value="Silver">Silver</option>
-                <option value="Gold">Gold</option>
-                <option value="Platinum">Platinum</option>
-              </select>
+              <div className="relative">
+                <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={form.harga}
+                  onChange={e => setForm({...form, harga: e.target.value})}
+                  placeholder="25000"
+                  required
+                  className="w-full pl-10 pr-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
+                />
+              </div>
+              {form.harga && (
+                <p className="text-xs text-slate-500 mt-1">
+                  {formatCurrency(parseFloat(form.harga) || 0)}
+                </p>
+              )}
+            </div>
+
+            {/* Stok */}
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">
+                Stok
+              </label>
+              <div className="relative">
+                <TrendingUp className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                <input
+                  type="number"
+                  min="0"
+                  value={form.stok}
+                  onChange={e => setForm({...form, stok: e.target.value})}
+                  placeholder="0"
+                  className="w-full pl-10 pr-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
+                />
+              </div>
+            </div>
+
+            {/* Status Aktif */}
+            <div className="md:col-span-2">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={form.aktif}
+                  onChange={e => setForm({...form, aktif: e.target.checked})}
+                  className="w-4 h-4 text-sky-600 border-slate-300 rounded focus:ring-sky-500"
+                />
+                <span className="text-sm font-medium text-slate-700">
+                  Produk Aktif (dapat dijual)
+                </span>
+              </label>
             </div>
           </div>
 
@@ -295,7 +355,7 @@ export default function Customers(){
               ) : (
                 <>
                   <Plus className="h-4 w-4" />
-                  <span>{editMode ? 'Update Pelanggan' : 'Tambah Pelanggan'}</span>
+                  <span>{editMode ? 'Update Produk' : 'Tambah Produk'}</span>
                 </>
               )}
             </button>
@@ -321,20 +381,20 @@ export default function Customers(){
             type="text"
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
-            placeholder="Cari pelanggan berdasarkan nama, telepon, atau email..."
+            placeholder="Cari produk berdasarkan nama..."
             className="w-full pl-10 pr-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
           />
         </div>
       </div>
 
-      {/* Customer List */}
+      {/* Product List */}
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
         <div className="p-4 border-b border-slate-200 bg-slate-50">
           <div className="flex items-center justify-between">
             <div>
-              <h4 className="font-semibold text-slate-900">Daftar Pelanggan</h4>
+              <h4 className="font-semibold text-slate-900">Daftar Produk</h4>
               <p className="text-sm text-slate-500 mt-1">
-                Menampilkan {list.length > 0 ? ((currentPage - 1) * itemsPerPage + 1) : 0} - {Math.min(currentPage * itemsPerPage, totalItems)} dari {totalItems} pelanggan
+                Menampilkan {list.length > 0 ? ((currentPage - 1) * itemsPerPage + 1) : 0} - {Math.min(currentPage * itemsPerPage, totalItems)} dari {totalItems} produk
               </p>
             </div>
             {totalPages > 1 && (
@@ -349,72 +409,90 @@ export default function Customers(){
           {loading && list.length === 0 ? (
             <div className="p-8 text-center">
               <Loader className="h-8 w-8 animate-spin text-sky-600 mx-auto mb-2" />
-              <p className="text-sm text-slate-500">Memuat data pelanggan...</p>
+              <p className="text-sm text-slate-500">Memuat data produk...</p>
             </div>
           ) : filteredList.length === 0 ? (
             <div className="p-8 text-center">
-              <User className="h-12 w-12 text-slate-300 mx-auto mb-3" />
+              <Package className="h-12 w-12 text-slate-300 mx-auto mb-3" />
               <p className="text-slate-600 font-medium mb-1">
-                {searchTerm ? 'Tidak ada pelanggan yang cocok' : 'Belum ada pelanggan'}
+                {searchTerm ? 'Tidak ada produk yang cocok' : 'Belum ada produk'}
               </p>
               <p className="text-sm text-slate-500">
-                {searchTerm ? 'Coba gunakan kata kunci lain' : 'Tambahkan pelanggan pertama Anda'}
+                {searchTerm ? 'Coba gunakan kata kunci lain' : 'Tambahkan produk pertama Anda'}
               </p>
             </div>
           ) : (
-            filteredList.map(pelanggan => (
+            filteredList.map(produk => (
               <div
-                key={pelanggan.pelanggan_id}
+                key={produk.produk_id}
                 className="p-4 hover:bg-slate-50 transition-colors"
               >
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-2">
-                      <h5 className="font-semibold text-slate-900">{pelanggan.nama}</h5>
-                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                        pelanggan.level === 'Platinum' ? 'bg-purple-100 text-purple-700' :
-                        pelanggan.level === 'Gold' ? 'bg-yellow-100 text-yellow-700' :
-                        pelanggan.level === 'Silver' ? 'bg-slate-100 text-slate-700' :
-                        'bg-orange-100 text-orange-700'
-                      }`}>
-                        {pelanggan.level}
-                      </span>
-                      <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 font-medium">
-                        {pelanggan.gender}
-                      </span>
+                      <h5 className="font-semibold text-slate-900">{produk.nama_produk}</h5>
+                      {produk.aktif ? (
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-700 font-medium flex items-center gap-1">
+                          <CheckCircle className="h-3 w-3" />
+                          Aktif
+                        </span>
+                      ) : (
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700 font-medium flex items-center gap-1">
+                          <XCircle className="h-3 w-3" />
+                          Nonaktif
+                        </span>
+                      )}
+                      {produk.stok === 0 && (
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 font-medium flex items-center gap-1">
+                          <AlertCircle className="h-3 w-3" />
+                          Stok Habis
+                        </span>
+                      )}
                     </div>
                     
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2 text-sm text-slate-600">
-                        <Phone className="h-3.5 w-3.5" />
-                        <span>{pelanggan.telepon}</span>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm">
+                      <div className="flex items-center gap-2 text-slate-600">
+                        
+                        <span className="font-medium">{formatCurrency(produk.harga)}</span>
                       </div>
                       
-                      {pelanggan.email && (
-                        <div className="flex items-center gap-2 text-sm text-slate-600">
-                          <Mail className="h-3.5 w-3.5" />
-                          <span>{pelanggan.email}</span>
-                        </div>
-                      )}
-                      
-                      {pelanggan.alamat && (
-                        <div className="flex items-center gap-2 text-sm text-slate-600">
-                          <MapPin className="h-3.5 w-3.5" />
-                          <span className="line-clamp-1">{pelanggan.alamat}</span>
-                        </div>
-                      )}
+                      <div className="flex items-center gap-2 text-slate-600">
+                        <TrendingUp className="h-3.5 w-3.5" />
+                        <span>Stok: <span className="font-medium">{produk.stok}</span></span>
+                      </div>
+
+                      <div className="flex items-center gap-2 text-slate-600">
+                        <Package className="h-3.5 w-3.5" />
+                        <span>Nilai: <span className="font-medium">{formatCurrency(produk.harga * produk.stok)}</span></span>
+                      </div>
                     </div>
 
-                    {pelanggan.Umkm && (
+                    {produk.Umkm && (
                       <div className="mt-2 text-xs text-slate-500">
-                        UMKM: {pelanggan.Umkm.nama_umkm}
+                        UMKM: {produk.Umkm.nama_umkm}
                       </div>
                     )}
                   </div>
 
                   <div className="flex gap-2">
                     <button
-                      onClick={() => handleEdit(pelanggan)}
+                      onClick={() => handleToggleActive(produk.produk_id, produk.aktif)}
+                      disabled={loading}
+                      className={`p-2 rounded-lg transition-colors disabled:opacity-50 ${
+                        produk.aktif 
+                          ? 'text-amber-600 hover:bg-amber-50' 
+                          : 'text-green-600 hover:bg-green-50'
+                      }`}
+                      title={produk.aktif ? 'Nonaktifkan' : 'Aktifkan'}
+                    >
+                      {produk.aktif ? (
+                        <XCircle className="h-4 w-4" />
+                      ) : (
+                        <CheckCircle className="h-4 w-4" />
+                      )}
+                    </button>
+                    <button
+                      onClick={() => handleEdit(produk)}
                       disabled={loading}
                       className="p-2 text-sky-600 hover:bg-sky-50 rounded-lg transition-colors disabled:opacity-50"
                       title="Edit"
@@ -422,7 +500,7 @@ export default function Customers(){
                       <Edit2 className="h-4 w-4" />
                     </button>
                     <button
-                      onClick={() => handleDelete(pelanggan.pelanggan_id)}
+                      onClick={() => handleDelete(produk.produk_id)}
                       disabled={loading}
                       className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
                       title="Hapus"
@@ -440,14 +518,11 @@ export default function Customers(){
         {totalPages > 1 && (
           <div className="p-4 border-t border-slate-200 bg-slate-50">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-              {/* Mobile Page Info */}
               <div className="text-sm text-slate-600 sm:hidden">
                 Halaman {currentPage} dari {totalPages}
               </div>
 
-              {/* Pagination Controls */}
               <div className="flex items-center gap-2">
-                {/* Previous Button */}
                 <button
                   onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                   disabled={currentPage === 1 || loading}
@@ -457,14 +532,12 @@ export default function Customers(){
                   <span className="hidden sm:inline">Sebelumnya</span>
                 </button>
 
-                {/* Page Numbers */}
                 <div className="flex items-center gap-1">
                   {(() => {
                     const pages = []
                     const showEllipsisStart = currentPage > 3
                     const showEllipsisEnd = currentPage < totalPages - 2
 
-                    // First page
                     if (totalPages > 0) {
                       pages.push(
                         <button
@@ -482,16 +555,12 @@ export default function Customers(){
                       )
                     }
 
-                    // Ellipsis start
                     if (showEllipsisStart) {
                       pages.push(
-                        <span key="ellipsis-start" className="px-2 text-slate-400">
-                          ...
-                        </span>
+                        <span key="ellipsis-start" className="px-2 text-slate-400">...</span>
                       )
                     }
 
-                    // Middle pages
                     const start = Math.max(2, currentPage - 1)
                     const end = Math.min(totalPages - 1, currentPage + 1)
                     
@@ -512,16 +581,12 @@ export default function Customers(){
                       )
                     }
 
-                    // Ellipsis end
                     if (showEllipsisEnd) {
                       pages.push(
-                        <span key="ellipsis-end" className="hidden sm:inline px-2 text-slate-400">
-                          ...
-                        </span>
+                        <span key="ellipsis-end" className="hidden sm:inline px-2 text-slate-400">...</span>
                       )
                     }
 
-                    // Last page
                     if (totalPages > 1) {
                       pages.push(
                         <button
@@ -543,7 +608,6 @@ export default function Customers(){
                   })()}
                 </div>
 
-                {/* Next Button */}
                 <button
                   onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                   disabled={currentPage === totalPages || loading}
@@ -554,7 +618,6 @@ export default function Customers(){
                 </button>
               </div>
 
-              {/* Items per page info (desktop only) */}
               <div className="hidden sm:block text-sm text-slate-600">
                 {itemsPerPage} per halaman
               </div>
