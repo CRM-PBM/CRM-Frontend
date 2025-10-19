@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { toast } from 'react-toastify'
 import { produkService } from '../../services/produkService'
-import { Package, DollarSign, Edit2, Trash2, Plus, Search, Loader, ChevronLeft, ChevronRight, TrendingUp, AlertCircle, CheckCircle, XCircle } from 'lucide-react'
+import { Package, Edit2, Trash2, Plus, Search, Loader, ChevronLeft, ChevronRight, TrendingUp, AlertCircle, CheckCircle, XCircle, Currency } from 'lucide-react'
 
 export default function Products(){
   const [list, setList] = useState([])
@@ -287,7 +287,7 @@ export default function Products(){
                 Harga <span className="text-red-500">*</span>
               </label>
               <div className="relative">
-                <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                <span className="absolute left-3 top-1/3 -translate-y-1/2 h-4 w-4 text-slate-400">Rp</span>
                 <input
                   type="number"
                   step="0.01"

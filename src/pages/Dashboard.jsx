@@ -45,17 +45,17 @@ export default function Dashboard(){
     setLoading(true)
     try {
       // Load all data with individual error handling
-      let pelangganData = []
+      // let pelangganData = []
       let produkData = []
       let transaksiStats = {}
       let recentTransactions = []
 
       // Try to load Pelanggan
+      let pelangganStats = {}
       try {
-        const pelangganRes = await pelangganService.getAll({ limit: 1000 })
-        pelangganData = pelangganRes.data || []
+        pelangganStats = await pelangganService.getStatistik()
       } catch (error) {
-        console.error('Error loading pelanggan:', error)
+        console.error('Error loading pelanggan statistik:', error)
       }
 
       // Try to load Produk
@@ -82,16 +82,16 @@ export default function Dashboard(){
         console.error('Error loading recent transactions:', error)
       }
 
-      // Process Pelanggan data
-      const today = new Date()
-      const thisMonth = today.getMonth()
-      const thisYear = today.getFullYear()
-      
-      const pelangganBaru = pelangganData.filter(p => {
-        if (!p.createdAt) return false
-        const date = new Date(p.createdAt)
-        return date.getMonth() === thisMonth && date.getFullYear() === thisYear
-      }).length
+      // // Process Pelanggan data
+      // const today = new Date()
+      // const thisMonth = today.getMonth()
+      // const thisYear = today.getFullYear()
+        
+      //   const pelangganBaru = pelangganData.filter(p => {
+      //       if (!p.createdAt) return false
+      //       const date = new Date(p.createdAt)
+      //       return date.getMonth() === thisMonth && date.getFullYear() === thisYear
+      //   }).length
 
       // Process Produk data
       const produkAktif = produkData.filter(p => p.aktif).length
@@ -106,15 +106,16 @@ export default function Dashboard(){
 
       // Get low stock products
       const lowStockProducts = produkData
-        .filter(p => p.aktif && p.stok < 10)
+        .filter(p => p.aktif && p.stok <= 10)
         .sort((a, b) => a.stok - b.stok)
         .slice(0, 5)
 
-      setDashboardData({
+      setDashboardData(prev => ({
+        ...prev,
         pelanggan: {
-          total: pelangganData.length,
-          baru_bulan_ini: pelangganBaru,
-          pertumbuhan: pelangganData.length > 0 ? ((pelangganBaru / pelangganData.length) * 100).toFixed(1) : 0
+          total: pelangganStats.total || prev.pelanggan.total,
+          baru_bulan_ini: pelangganStats.baru_bulan_ini || prev.pelanggan.baru_bulan_ini,
+          pertumbuhan: pelangganStats.pertumbuhan || prev.pelanggan.pertumbuhan
         },
         produk: {
           total: produkData.length,
@@ -133,7 +134,7 @@ export default function Dashboard(){
         recentTransactions: recentTransactions.slice(0, 5),
         topProducts,
         lowStockProducts
-      })
+      }))
     } catch (error) {
       console.error('Error loading dashboard data:', error)
       // Don't show error toast, just log it
@@ -368,7 +369,7 @@ export default function Dashboard(){
                   <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
                     <div className="flex items-center gap-2 mb-4">
                       <AlertCircle className="h-5 w-5 text-red-600" />
-                      <h3 className="font-semibold text-slate-900">Stok Rendah</h3>
+                      <h3 className="font-semibold text-slate-900">Stok Rendah (-10 Stok)</h3>
                     </div>
                     <div className="text-xs text-slate-500 mb-3">Produk perlu restock</div>
                     {loading ? (
