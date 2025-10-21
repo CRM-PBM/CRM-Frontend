@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { toast } from 'react-toastify'
 import { produkService } from '../../services/produkService'
-import { Package, Edit2, Trash2, Plus, Search, Loader, ChevronLeft, ChevronRight, TrendingUp, AlertCircle, CheckCircle, XCircle, Currency } from 'lucide-react'
+import { Package, Edit2, Trash2, Plus, Search, Loader, ChevronLeft, ChevronRight, TrendingUp, AlertCircle, CheckCircle, XCircle, Currency, DollarSign } from 'lucide-react'
 
 export default function Products(){
   const [list, setList] = useState([])
@@ -12,11 +12,13 @@ export default function Products(){
   const [totalItems, setTotalItems] = useState(0)
   const [itemsPerPage] = useState(10)
   const [statistics, setStatistics] = useState(null)
+  const [jenisProdukList, setJenisProdukList] = useState([])
   const [form, setForm] = useState({
     nama_produk: '',
     harga: '',
     stok: '0',
-    aktif: true
+    aktif: true,
+    jenis_produk_id: ''
   })
   const [editMode, setEditMode] = useState(false)
   const [editId, setEditId] = useState(null)
@@ -24,8 +26,22 @@ export default function Products(){
   useEffect(() => {
     loadProduk()
     loadStatistics()
+    loadJenisProduk()
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage])
+
+  async function loadJenisProduk() {
+    try {
+      const response = await produkService.getJenisProduk() 
+      if (response.success) {
+        // Asumsi response adalah { success: true, data: [ {jenis1}, {jenis2} ] }
+        setJenisProdukList(response.data.data || response.data || []) 
+      }
+    } catch (error) {
+      console.error('Error loading jenis produk:', error)
+      toast.error('Gagal memuat jenis produk')
+    }
+  }
 
   async function loadProduk() {
     setLoading(true)
@@ -167,7 +183,8 @@ export default function Products(){
       nama_produk: '',
       harga: '',
       stok: '0',
-      aktif: true
+      aktif: true,
+      jenis_produk_id: ''
     })
   }
 
@@ -279,6 +296,25 @@ export default function Products(){
                   className="w-full pl-10 pr-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
                 />
               </div>
+            </div>
+
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-slate-700 mb-1">
+                Jenis Produk <span className="text-red-500">*</span>
+              </label>
+              <select
+                value={form.jenis_produk_id}
+                onChange={e => setForm({...form, jenis_produk_id: e.target.value})}
+                required
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
+              >
+                <option value="">Pilih Jenis Produk</option>
+                {jenisProdukList.map(j => (
+                  <option key={j.jenis_produk_id} value={j.jenis_produk_id}>
+                    {j.nama_jenis} ({j.kode_jenis})
+                  </option>
+                ))}
+              </select>
             </div>
 
             {/* Harga */}

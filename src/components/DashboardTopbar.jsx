@@ -33,12 +33,6 @@ export default function DashboardTopbar({ title = 'Dashboard', onToggleSidebar =
             />
           </div>
 
-          {/* Add Button */}
-          <button className="hidden sm:inline-flex items-center gap-2 bg-sky-600 text-white px-4 py-2 rounded-lg shadow-sm hover:bg-sky-700 transition-colors">
-            <Plus className="h-4 w-4" />
-            <span className="text-sm font-medium">Buat</span>
-          </button>
-
           {/* Notifications */}
           <button 
             className="p-2 rounded-lg hover:bg-slate-100 transition-colors relative"

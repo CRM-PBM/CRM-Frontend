@@ -184,12 +184,7 @@ export default function Transactions(){
 
   // Helper function to get total harga from various possible field names
   const getTotalHarga = (transaksi) => {
-    // Try different possible field names
-    return transaksi.total_harga || 
-           transaksi.totalHarga || 
-           transaksi.total || 
-           transaksi.Total || 
-           0
+    return transaksi.total_harga || transaksi.totalHarga || transaksi.total || transaksi.Total || 0
   }
 
   // Format currency
@@ -792,15 +787,21 @@ export default function Transactions(){
               {/* Transaction Info */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm text-slate-500 mb-1">Pelanggan</p>
+                  <p className="text-sm text-slate-500 mb-1">Nomor Transaksi</p>
                   <p className="font-medium text-slate-900">
-                    {selectedTransaction.Pelanggan?.nama || 'N/A'}
+                    {formatDate(selectedTransaction.nomor_transaksi)}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-slate-500 mb-1">Tanggal</p>
+                  <p className="text-sm text-slate-500 mb-1">Tanggal </p>
                   <p className="font-medium text-slate-900">
                     {formatDate(selectedTransaction.tanggal_transaksi)}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-slate-500 mb-1">Nama Pelanggan</p>
+                  <p className="font-medium text-slate-900">
+                    {selectedTransaction.Pelanggan?.nama || 'N/A'}
                   </p>
                 </div>
                 <div>
@@ -815,14 +816,14 @@ export default function Transactions(){
                     {formatCurrency(getTotalHarga(selectedTransaction))}
                   </p>
                 </div>
-              </div>
-
+              
               {selectedTransaction.keterangan && (
                 <div>
                   <p className="text-sm text-slate-500 mb-1">Keterangan</p>
                   <p className="text-slate-700 italic">{selectedTransaction.keterangan}</p>
                 </div>
               )}
+              </div>
 
               {/* Detail Items */}
               <div>
