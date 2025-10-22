@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { FaSignInAlt, FaSpinner } from 'react-icons/fa'
 import { toast } from 'react-toastify'
 import { authService } from '../services/authService'
+import { setTokens, setUser } from '../services/storage'
 
 const LoginPage = () => {
     const navigate = useNavigate()
@@ -26,20 +27,21 @@ const LoginPage = () => {
             const res = await authService.login(formData)
             console.log('Login response:', res)
 
-            // Simpan token & data user
-            if (res.token) {
-                localStorage.setItem('token', res.token)
-                console.log('Token saved to localStorage')
+            // Simpan accessToken dan refreshToken
+            if (res.accessToken && res.refreshToken) {
+                setTokens(res.accessToken, res.refreshToken)
+                console.log('Tokens saved to storage')
             } else {
-                console.error('No token in response')
+                console.error('No tokens in response')
             }
 
+            // Simpan data user
             if (res.user) {
-                localStorage.setItem('user', JSON.stringify(res.user))
-                console.log('User data saved to localStorage')
+                setUser(res.user)
+                console.log('User data saved to storage')
             }
 
-            toast.success('Anda berhasil masuk!', {
+            toast.success(res.msg || 'Anda berhasil masuk!', {
                 position: "top-center"
             })
             navigate('/dashboard')

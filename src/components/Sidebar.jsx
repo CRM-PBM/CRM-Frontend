@@ -1,7 +1,13 @@
 import React, { useEffect } from 'react'
 import { Home, Users, Package, CreditCard, MessageSquare, FileText, Settings, LogOut, X, ChevronLeft, ChevronRight } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { toast } from 'react-toastify'
+import { authService } from '../services/authService'
+import { clearTokens } from '../services/storage'
 
 export default function Sidebar({ view, setView, sidebarOpen, setSidebarOpen, collapsed, setCollapsed }){
+  const navigate = useNavigate()
+  
   const items = [
     { key: 'overview', label: 'Ringkasan', icon: Home },
     { key: 'customers', label: 'Pelanggan', icon: Users },
@@ -10,6 +16,20 @@ export default function Sidebar({ view, setView, sidebarOpen, setSidebarOpen, co
     { key: 'wa', label: 'Kirim WA', icon: MessageSquare },
     { key: 'invoices', label: 'Nota & Laporan', icon: FileText },
   ]
+
+  const handleLogout = async () => {
+    try {
+      await authService.logout()
+      toast.info('Anda telah keluar', { position: "top-center" })
+      navigate('/login')
+    } catch (error) {
+      console.error('Logout error:', error)
+      // Even if logout fails, clear tokens and redirect
+      clearTokens()
+      toast.info('Anda telah keluar', { position: "top-center" })
+      navigate('/login')
+    }
+  }
 
   useEffect(()=>{
     function onKey(e){
@@ -85,7 +105,10 @@ export default function Sidebar({ view, setView, sidebarOpen, setSidebarOpen, co
               <Settings className="h-5 w-5 text-slate-400" />
               <span>Pengaturan</span>
             </button>
-            <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-600 hover:bg-slate-50 transition-colors">
+            <button 
+              onClick={handleLogout}
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-600 hover:bg-slate-50 transition-colors"
+            >
               <LogOut className="h-5 w-5 text-slate-400" />
               <span>Keluar</span>
             </button>
@@ -162,7 +185,11 @@ export default function Sidebar({ view, setView, sidebarOpen, setSidebarOpen, co
               <Settings className="h-5 w-5 text-slate-400 flex-shrink-0" />
               {!collapsed && <span>Pengaturan</span>}
             </button>
-            <button className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-600 hover:bg-slate-50 transition-colors ${collapsed ? 'justify-center' : ''}`} title={collapsed ? 'Keluar' : ''}>
+            <button 
+              onClick={handleLogout}
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-600 hover:bg-slate-50 transition-colors ${collapsed ? 'justify-center' : ''}`} 
+              title={collapsed ? 'Keluar' : ''}
+            >
               <LogOut className="h-5 w-5 text-slate-400 flex-shrink-0" />
               {!collapsed && <span>Keluar</span>}
             </button>

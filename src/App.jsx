@@ -3,6 +3,7 @@ import './index.css'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
+import { getAccessToken } from './services/storage'
 
 // Import komponen landing page
 import Header from './components/Header'
@@ -21,7 +22,7 @@ import InvoiceGeneratorPage from './pages/InvoiceGeneratorPage'
 
 // Component Helper untuk Route yang Terproteksi
 const ProtectedRoute = ({ children }) => {
-  const isAuthenticated = localStorage.getItem('token')
+  const isAuthenticated = getAccessToken()
   return isAuthenticated ? children : <Navigate to="/login" replace />
 }
 

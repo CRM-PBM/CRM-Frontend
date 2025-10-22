@@ -2,11 +2,13 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { FaFilePdf, FaRedo } from 'react-icons/fa'; 
 import { toast } from 'react-toastify';
+import { getAccessToken } from '../services/storage';
+
 const API_BASE_URL = 'http://localhost:3000/api';
 
 // Helper function untuk mendapatkan header dengan token JWT
 const getAuthHeaders = () => {
-    const token = localStorage.getItem('token');
+    const token = getAccessToken();
     if (!token) {
         return null;
     }

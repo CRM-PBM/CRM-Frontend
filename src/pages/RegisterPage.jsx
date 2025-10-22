@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { FaUserPlus, FaSpinner } from 'react-icons/fa'
 import { toast } from 'react-toastify'
 import { authService } from '../services/authService'
+import { setTokens, setUser } from '../services/storage'
 
 const RegisterPage = () => {
     const navigate = useNavigate()
@@ -29,9 +30,17 @@ const RegisterPage = () => {
         try {
             const res = await authService.register(formData)
 
-            // Simpan token & data user
-            localStorage.setItem('token', res.token)
-            localStorage.setItem('user', JSON.stringify(res.user))
+            // Simpan token & data user jika ada
+            if (res.accessToken && res.refreshToken) {
+                setTokens(res.accessToken, res.refreshToken)
+            } else if (res.token) {
+                // Fallback untuk API lama yang masih mengembalikan single token
+                setTokens(res.token, res.token)
+            }
+            
+            if (res.user) {
+                setUser(res.user)
+            }
 
             toast.success('🎉 Registrasi berhasil! Selamat datang di UMKM.CRM.', {
                 position: "top-center"

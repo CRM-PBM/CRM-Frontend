@@ -16,7 +16,8 @@ export default function Products(){
     nama_produk: '',
     harga: '',
     stok: '0',
-    aktif: true
+    aktif: true.
+    umkm_id,
   })
   const [editMode, setEditMode] = useState(false)
   const [editId, setEditId] = useState(null)
@@ -155,7 +156,8 @@ export default function Products(){
       nama_produk: produk.nama_produk || '',
       harga: produk.harga?.toString() || '',
       stok: produk.stok?.toString() || '0',
-      aktif: produk.aktif !== false
+      aktif: produk.aktif !== false,
+      umkm_id: produk.umkm_id
     })
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
