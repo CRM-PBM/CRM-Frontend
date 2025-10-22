@@ -50,6 +50,12 @@ export const produkService = {
     return response.data
   },
 
+  // Get types product
+  getJenisProduk: async () => {
+      const response = await api.get('/produk/jenis'); 
+      return response.data;
+  },
+
   // Get product statistics
   getStatistics: async () => {
     const response = await api.get(`${BASE_URL}/statistik`)

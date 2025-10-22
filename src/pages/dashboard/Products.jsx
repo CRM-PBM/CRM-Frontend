@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { toast } from 'react-toastify'
 import { produkService } from '../../services/produkService'
-import { Package, DollarSign, Edit2, Trash2, Plus, Search, Loader, ChevronLeft, ChevronRight, TrendingUp, AlertCircle, CheckCircle, XCircle } from 'lucide-react'
+import { Package, Edit2, Trash2, Plus, Search, Loader, ChevronLeft, ChevronRight, TrendingUp, AlertCircle, CheckCircle, XCircle, Currency, DollarSign } from 'lucide-react'
 
 export default function Products(){
   const [list, setList] = useState([])
@@ -12,12 +12,12 @@ export default function Products(){
   const [totalItems, setTotalItems] = useState(0)
   const [itemsPerPage] = useState(10)
   const [statistics, setStatistics] = useState(null)
+  const [jenisProdukList, setJenisProdukList] = useState([])
   const [form, setForm] = useState({
     nama_produk: '',
     harga: '',
     stok: '0',
-    aktif: true.
-    umkm_id,
+    aktif: true
   })
   const [editMode, setEditMode] = useState(false)
   const [editId, setEditId] = useState(null)
@@ -25,8 +25,22 @@ export default function Products(){
   useEffect(() => {
     loadProduk()
     loadStatistics()
+    loadJenisProduk()
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage])
+
+  async function loadJenisProduk() {
+    try {
+      const response = await produkService.getJenisProduk() 
+      if (response.success) {
+        // Asumsi response adalah { success: true, data: [ {jenis1}, {jenis2} ] }
+        setJenisProdukList(response.data.data || response.data || []) 
+      }
+    } catch (error) {
+      console.error('Error loading jenis produk:', error)
+      toast.error('Gagal memuat jenis produk')
+    }
+  }
 
   async function loadProduk() {
     setLoading(true)
@@ -169,7 +183,8 @@ export default function Products(){
       nama_produk: '',
       harga: '',
       stok: '0',
-      aktif: true
+      aktif: true,
+      jenis_produk_id: ''
     })
   }
 
@@ -283,13 +298,32 @@ export default function Products(){
               </div>
             </div>
 
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-slate-700 mb-1">
+                Jenis Produk <span className="text-red-500">*</span>
+              </label>
+              <select
+                value={form.jenis_produk_id}
+                onChange={e => setForm({...form, jenis_produk_id: e.target.value})}
+                required
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
+              >
+                <option value="">Pilih Jenis Produk</option>
+                {jenisProdukList.map(j => (
+                  <option key={j.jenis_produk_id} value={j.jenis_produk_id}>
+                    {j.nama_jenis} ({j.kode_jenis})
+                  </option>
+                ))}
+              </select>
+            </div>
+
             {/* Harga */}
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">
                 Harga <span className="text-red-500">*</span>
               </label>
               <div className="relative">
-                <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                <span className="absolute left-3 top-1/3 -translate-y-1/2 h-4 w-4 text-slate-400">Rp</span>
                 <input
                   type="number"
                   step="0.01"
