@@ -1,0 +1,9 @@
+# Cloudflare Pages Build Configuration
+
+# Node version
+NODE_VERSION=20
+
+# NPM settings
+NPM_FLAGS=--legacy-peer-deps
+
+# Build command will use: npm install && npm run build
