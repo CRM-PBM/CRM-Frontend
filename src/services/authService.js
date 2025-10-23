@@ -31,18 +31,12 @@ const processQueue = (error, token = null) => {
 api.interceptors.request.use(
   (config) => {
     const token = getAccessToken()
-    console.log('API Request:', config.method?.toUpperCase(), config.url)
-    console.log('Token exists:', !!token)
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
-      console.log('Authorization header set')
-    } else {
-      console.log('No token found in storage')
     }
     return config
   },
   (error) => {
-    console.error('Request interceptor error:', error)
     return Promise.reject(error)
   }
 )
@@ -50,13 +44,10 @@ api.interceptors.request.use(
 // Response interceptor to handle token refresh
 api.interceptors.response.use(
   (response) => {
-    console.log('API Response:', response.status, response.config.url)
     return response
   },
   async (error) => {
     const originalRequest = error.config
-    
-    console.error('API Error:', error.response?.status, error.response?.data || error.message)
     
     // If error is 401 and we haven't tried to refresh yet
     if (error.response?.status === 401 && !originalRequest._retry) {
@@ -78,14 +69,12 @@ api.interceptors.response.use(
       const refreshToken = getRefreshToken()
       
       if (!refreshToken) {
-        console.log('No refresh token available - redirecting to login')
         clearTokens()
         window.location.href = '/login'
         return Promise.reject(error)
       }
 
       try {
-        console.log('Attempting to refresh token...')
         // Call refresh endpoint with refresh token
         const response = await axios.post(`${API_BASE_URL}/auth/refresh`, {
           refreshToken
@@ -94,7 +83,6 @@ api.interceptors.response.use(
         const { accessToken } = response.data
         
         if (accessToken) {
-          console.log('Token refreshed successfully')
           setAccessToken(accessToken)
           
           // Update the failed request with new token
@@ -109,7 +97,6 @@ api.interceptors.response.use(
           return api(originalRequest)
         }
       } catch (refreshError) {
-        console.error('Token refresh failed:', refreshError)
         processQueue(refreshError, null)
         isRefreshing = false
         

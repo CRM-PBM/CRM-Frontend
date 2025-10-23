@@ -34,14 +34,22 @@ export default function Customers(){
         page: currentPage, 
         limit: itemsPerPage 
       })
+      
       if (response.success) {
         setList(response.data || [])
         setTotalPages(response.totalPages || 1)
         setTotalItems(response.total || 0)
+      } else {
+        toast.error(response.msg || 'Gagal memuat data pelanggan')
       }
     } catch (error) {
-      console.error('Error loading pelanggan:', error)
-      toast.error('Gagal memuat data pelanggan')
+      if (error.response?.status === 401) {
+        toast.error('Sesi Anda telah berakhir. Silakan login kembali.')
+      } else if (error.response?.status === 500) {
+        toast.error('Server error. Silakan cek koneksi database backend.')
+      } else {
+        toast.error(error.response?.data?.msg || 'Gagal memuat data pelanggan')
+      }
     } finally {
       setLoading(false)
     }
@@ -84,7 +92,6 @@ export default function Customers(){
       setCurrentPage(1) // Reset to first page
       await loadPelanggan()
     } catch (error) {
-      console.error('Error saving pelanggan:', error)
       const errorMsg = error.response?.data?.message || 'Gagal menyimpan pelanggan'
       toast.error(errorMsg)
     } finally {
@@ -107,8 +114,7 @@ export default function Customers(){
           await loadPelanggan()
         }
       }
-    } catch (error) {
-      console.error('Error deleting pelanggan:', error)
+    } catch {
       toast.error('Gagal menghapus pelanggan')
     } finally {
       setLoading(false)
