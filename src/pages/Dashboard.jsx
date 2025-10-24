@@ -6,6 +6,7 @@ import {
 import Customers from './dashboard/Customers'
 import Products from './dashboard/Products'
 import Transactions from './dashboard/Transactions'
+import Categories from './dashboard/Categories'
 import WaBlast from './dashboard/WaBlast'
 import Invoices from './dashboard/Invoices'
 import DashboardTopbar from '../components/DashboardTopbar'
@@ -195,7 +196,7 @@ export default function Dashboard(){
         <main className="flex-1 min-w-0 p-4 md:p-6 overflow-y-auto">
           <DashboardTopbar 
             onToggleSidebar={()=>setSidebarOpen(s => !s)} 
-            title={view==='overview'?'Ringkasan': view==='customers'?'Manajemen Pelanggan': view==='products'?'Manajemen Produk': view==='transactions'?'Pencatatan Transaksi': view==='wa'?'WA Blast': 'Nota & Laporan'} 
+            title={view==='overview'?'Ringkasan': view==='customers'?'Manajemen Pelanggan': view==='products'?'Manajemen Produk': view==='transactions'?'Pencatatan Transaksi': view==='wa'?'WA Blast': view==='categories'?'Manajemen Kategori & Jenis Produk' : 'Nota & Laporan'} 
           />
 
             {view==='overview' && (
@@ -483,6 +484,7 @@ export default function Dashboard(){
 
             {view==='customers' && <Customers />}
             {view==='products' && <Products />}
+            {view === 'categories' && <Categories />}
             {view==='transactions' && <Transactions />}
             {view==='wa' && <WaBlast />}
             {view==='invoices' && <Invoices />}

@@ -18,6 +18,10 @@ import Dashboard from './pages/Dashboard'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 import InvoiceGeneratorPage from './pages/InvoiceGeneratorPage'
+import Products from './pages/dashboard/Products'
+import Categories from './pages/dashboard/Categories'
+import Transactions from './pages/dashboard/Transactions'
+
 
 // Component Helper untuk Route yang Terproteksi
 const ProtectedRoute = ({ children }) => {
@@ -60,8 +64,12 @@ function App() {
               <ProtectedRoute>
                 <Dashboard />
               </ProtectedRoute>
-            }
-          />
+            }>
+
+            <Route path="products" element={<Products />} />
+            <Route path="categories" element={<Categories />} />
+            <Route path="transactions" element={<Transactions />} />
+          </Route>
 
           <Route
             path="/invoice-generator"

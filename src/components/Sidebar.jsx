@@ -1,11 +1,12 @@
 import React, { useEffect } from 'react'
-import { Home, Users, Package, CreditCard, MessageSquare, FileText, Settings, LogOut, X, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Home, Users, Package, CreditCard, MessageSquare, FileText, Settings, LogOut, X, ChevronLeft, ChevronRight, ShoppingBasket } from 'lucide-react'
 
 export default function Sidebar({ view, setView, sidebarOpen, setSidebarOpen, collapsed, setCollapsed }){
   const items = [
     { key: 'overview', label: 'Ringkasan', icon: Home },
     { key: 'customers', label: 'Pelanggan', icon: Users },
     { key: 'products', label: 'Produk', icon: Package },
+    { key: 'categories', label: 'Kategori & Jenis Produk', icon: ShoppingBasket},
     { key: 'transactions', label: 'Transaksi', icon: CreditCard },
     { key: 'wa', label: 'Kirim WA', icon: MessageSquare },
     { key: 'invoices', label: 'Nota & Laporan', icon: FileText },

@@ -147,22 +147,31 @@ export default function Products(){
     }
   }
 
-  async function handleToggleActive(id, currentStatus) {
-    setLoading(true)
+  // CRM-frontend/src/pages/Products.jsx (handleToggleActive)
+
+async function handleToggleActive(id, currentStatus) {
+    setList(list.map(p => 
+        p.produk_id === id ? { ...p, aktif: !currentStatus } : p
+    ));
+    toast.success(`Produk ${currentStatus ? 'dinonaktifkan' : 'diaktifkan'}`);
+
+    setLoading(true);
     try {
-      const response = await produkService.toggleActive(id)
-      if (response.success) {
-        toast.success(`Produk ${currentStatus ? 'dinonaktifkan' : 'diaktifkan'}`)
-        await loadProduk()
-        await loadStatistics()
-      }
+        await produkService.toggleActive(id); 
+        loadProduk(); 
+        loadStatistics(); 
+
     } catch (error) {
-      console.error('Error toggling active:', error)
-      toast.error('Gagal mengubah status produk')
+        setList(list.map(p => 
+            p.produk_id === id ? { ...p, aktif: currentStatus } : p
+        ));
+        console.error('Error toggling active:', error);
+        toast.error(error.response?.data?.message || 'Gagal mengubah status produk');
+
     } finally {
-      setLoading(false)
+        setLoading(false);
     }
-  }
+}
 
   function handleEdit(produk) {
     setEditMode(true)
@@ -171,7 +180,8 @@ export default function Products(){
       nama_produk: produk.nama_produk || '',
       harga: produk.harga?.toString() || '',
       stok: produk.stok?.toString() || '0',
-      aktif: produk.aktif !== false
+      aktif: produk.aktif !== false,
+      jenis_produk_id: produk.jenis_produk_id || ''
     })
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
@@ -311,7 +321,7 @@ export default function Products(){
                 <option value="">Pilih Jenis Produk</option>
                 {jenisProdukList.map(j => (
                   <option key={j.jenis_produk_id} value={j.jenis_produk_id}>
-                    {j.nama_jenis} ({j.kode_jenis})
+                    {j.nama_jenis} 
                   </option>
                 ))}
               </select>
@@ -504,7 +514,7 @@ export default function Products(){
                     </div>
 
                     {produk.Umkm && (
-                      <div className="mt-2 text-xs text-slate-500">
+                      <div className="mt-2 text-xs text-slate-600">
                         UMKM: {produk.Umkm.nama_umkm}
                       </div>
                     )}

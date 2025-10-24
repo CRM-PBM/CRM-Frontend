@@ -17,7 +17,7 @@ export default function Customers(){
     email: '',
     alamat: '',
     gender: 'Pria',
-    level: 'Silver'
+    level: 'Bronze'
   })
   const [editMode, setEditMode] = useState(false)
   const [editId, setEditId] = useState(null)
@@ -77,7 +77,7 @@ export default function Customers(){
         email: '',
         alamat: '',
         gender: 'Pria',
-        level: 'Silver'
+        level: 'Bronze'
       })
       
       // Reload data
@@ -124,7 +124,7 @@ export default function Customers(){
       email: pelanggan.email || '',
       alamat: pelanggan.alamat || '',
       gender: pelanggan.gender || 'Pria',
-      level: pelanggan.level || 'Silver'
+      level: pelanggan.level || 'Bronze'
     })
     // Scroll to form
     window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -139,7 +139,7 @@ export default function Customers(){
       email: '',
       alamat: '',
       gender: 'Pria',
-      level: 'Silver'
+      level: 'Bronze'
     })
   }
 
