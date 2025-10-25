@@ -24,16 +24,15 @@ export default function Categories() {
     async function loadCategories() {
         setLoading(true)
         try {
-        const res = await kategoriService.getAllKategori()
-        console.log('Response kategori:', res.data)
+            const res = await kategoriService.getAllKategori()
+            console.log('Response kategori:', res.data)
 
-        // ✅ ambil array dari res.data.data
-        setCategories(res.data.data || [])
+            setCategories(res.data.data || [])
         } catch (error) {
-        console.error('Gagal memuat kategori:', error)
-        toast.error('Gagal memuat kategori')
+            console.error('Gagal memuat kategori:', error)
+            toast.error('Gagal memuat kategori')
         } finally {
-        setLoading(false)
+            setLoading(false)
         }
     }
 
@@ -92,22 +91,23 @@ export default function Categories() {
     }
 
     async function handleJenisSubmit(e) {
-    e.preventDefault();
-    try {
-        if (editingJenisId) {
-        await jenisProdukService.updateJenis(editingJenisId, jenisForm);
-        toast.success('Jenis produk diperbarui');
-        } else {
-        await jenisProdukService.createJenis(jenisForm);
-        toast.success('Jenis produk ditambahkan');
+        e.preventDefault();
+        try {
+            setLoadingJenis(true);
+            if (editingJenisId) {
+                await jenisProdukService.updateJenis(editingJenisId, jenisForm);
+                toast.success('Jenis produk diperbarui');
+            } else {
+                await jenisProdukService.createJenis(jenisForm);
+                toast.success('Jenis produk ditambahkan');
+            }
+                await loadJenis();
+        } catch (error) {
+            console.error('Gagal menyimpan jenis:', error);
+            toast.error('Gagal menyimpan jenis produk');
+        } finally {
+            setLoadingJenis(false);
         }
-        setJenisForm({ nama_jenis: '', kategori_id: '' });
-        setEditingJenisId(null);
-        await loadJenis();
-    } catch (error) {
-        console.error('Gagal menyimpan jenis:', error);
-        toast.error('Gagal menyimpan jenis produk');
-    }
     }
 
     async function handleEditJenis(jenis) {
@@ -129,6 +129,15 @@ export default function Categories() {
         console.error('Gagal menghapus jenis:', error);
         toast.error('Gagal menghapus jenis produk');
     }
+    }
+
+    async function handleCancelEditKategori() {
+        setEditingKategoriId(null);
+        setFormData({ nama_kategori: '', deskripsi: '' });
+    }
+    async function handleCancelEditJenis() {
+        setEditingJenisId(null);
+        setJenisForm({ nama_jenis: '', kategori_id: '' });
     }
 
 
@@ -170,6 +179,9 @@ return (
                     {editingKategoriId ? <Edit className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
                     {editingKategoriId ? 'Update' : 'Tambah'}
                     </button>
+                    {editingKategoriId && (
+                        <button type="button" onClick={handleCancelEditKategori} className="px-4 py-2 border border-slate-700 bg-slate-50 text-slate-600 rounded-lg font-medium hover:bg-slate-700 hover:text-slate-300 transition-colors" disabled={loading}>Batal</button>
+                    )}
                 </form>
                 
                 <div className="bg-white rounded-lg shadow-sm border border-slate-200">
@@ -257,15 +269,9 @@ return (
                             {editingJenisId ? <Edit className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
                             {editingJenisId ? 'Update' : 'Tambah'}
                             </button>
-                            {/* {editingJenisId && (
-                                <button
-                                    type="button"
-                                    onClick={handleCancelEdit}
-                                    className="px-6 py-2 border border-slate-300 text-slate-700 rounded-lg font-medium hover:bg-slate-50 transition-colors"
-                                >
-                                    Batal
-                                </button>
-                            )} */}
+                            {editingJenisId && (
+                                <button type="button" onClick={handleCancelEditJenis} className="px-4 py-2 border border-slate-700 bg-slate-50 text-slate-700 rounded-lg font-medium hover:bg-slate-500 hover:text-slate-300  transition-colors" disabled={loadingJenis}>Batal</button>
+                            )}
                     </form>
 
                     <div className="bg-white rounded-lg shadow-sm border border-slate-200">
@@ -286,8 +292,8 @@ return (
                                 <tbody>
                                 {jenisList.map((jenis, index) => (
                                     <tr key={jenis.jenis_produk_id} className="hover:bg-slate-50">
-                                    <td className="px-4 py-3 border-b">{index + 1}</td>
-                                    <td className="px-4 py-3 border-b">{jenis.nama_jenis}</td>
+                                    <td className="px-4 py-3 border-b">{index + 1}.</td>
+                                    <td className="px-4 py-3 border-b text-left">{jenis.nama_jenis}</td>
                                     <td className="px-4 py-3 border-b">
                                         {jenis.KategoriProduk?.nama_kategori || '-'}
                                     </td>
