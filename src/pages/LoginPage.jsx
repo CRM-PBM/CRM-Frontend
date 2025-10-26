@@ -35,13 +35,16 @@ const LoginPage = () => {
             }
 
             if (res.user) {
-                localStorage.setItem('user', JSON.stringify(res.user))
-                console.log('User data saved to localStorage')
+                const namaUmkm = res.user.Umkm?.nama_umkm || res.user.nama_umkm || 'UMKM Saya';
+                const namaPemilik = res.user.Umkm?.nama_pemilik || res.user.nama_pemilik || 'Pemilik Usaha';
+
+                localStorage.setItem('user', JSON.stringify(res.user));
+                localStorage.setItem('umkmData', JSON.stringify({
+                    nama_umkm: namaUmkm,
+                    nama_pemilik: namaPemilik
+                }));
             }
 
-            toast.success('Anda berhasil masuk!', {
-                position: "top-center"
-            })
             navigate('/dashboard')
         } catch (err) {
             console.error('Login error:', err)

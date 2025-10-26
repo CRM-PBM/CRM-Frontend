@@ -370,7 +370,7 @@ export default function Dashboard(){
                   <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
                     <div className="flex items-center gap-2 mb-4">
                       <AlertCircle className="h-5 w-5 text-red-600" />
-                      <h3 className="font-semibold text-slate-900">Stok Rendah (-10 Stok)</h3>
+                      <h3 className="font-semibold text-slate-900">Stok Rendah (&le;10 Stok)</h3>
                     </div>
                     <div className="text-xs text-slate-500 mb-3">Produk perlu restock</div>
                     {loading ? (
