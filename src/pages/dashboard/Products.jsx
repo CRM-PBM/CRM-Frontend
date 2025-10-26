@@ -65,9 +65,10 @@ export default function Products(){
 
   async function loadStatistics() {
     try {
-      const response = await produkService.getStatistics()
-      if (response.success) {
-        setStatistics(response.data)
+      const response = await produkService.getStatistics();
+
+      if (response && response.data) {
+        setStatistics(response.data); 
       }
     } catch (error) {
       console.error('Error loading statistics:', error)
