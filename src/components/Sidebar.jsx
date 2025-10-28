@@ -23,7 +23,7 @@ export default function Sidebar({ view, setView, sidebarOpen, setSidebarOpen, co
     { key: 'categories', label: 'Kategori & Jenis Produk', icon: ShoppingBasket },
     { key: 'transactions', label: 'Transaksi', icon: CreditCard },
     { key: 'wa', label: 'Kirim WA', icon: MessageSquare },
-    { key: 'invoices', label: 'Nota & Laporan', icon: FileText },
+    { key: 'reports', label: 'Laporan', icon: FileText },
   ]
 
   // 🔹 Ambil user dari localStorage

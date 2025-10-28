@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react'
-import { Send, Users, Eye, MessageSquare, Wifi, WifiOff, CheckCircle, Clock, XCircle, Trash2, User, Phone, Mail, MapPin } from 'lucide-react'
+import { Send, Users, Eye, MessageSquare, Wifi, WifiOff, CheckCircle, Clock, XCircle, Trash2, User, Phone, Mail, FileText, Copy } from 'lucide-react'
 import * as BroadcastAPI from '../../services/broadcastApi'
 
 export default function WaBlast(){
@@ -14,6 +14,74 @@ export default function WaBlast(){
     isi_pesan: '',
   })
   const textareaRef = useRef(null)
+
+  // Template pesan yang sudah jadi
+  const messageTemplates = [
+    {
+      id: 1,
+      nama: 'Promo Diskon',
+      kategori: 'Promo',
+      emoji: '🎉',
+      judul: 'Promo Spesial untuk {nama}!',
+      isi: 'Halo {nama}! 👋\n\nKami punya kabar gembira untuk Anda! 🎁\n\nDapatkan DISKON 50% untuk semua produk pilihan.\n\nPromo terbatas hanya sampai akhir bulan!\n\nJangan sampai kehabisan ya! 😊'
+    },
+    {
+      id: 2,
+      nama: 'Pengingat Pembayaran',
+      kategori: 'Pengingat',
+      emoji: '⏰',
+      judul: 'Pengingat Pembayaran',
+      isi: 'Halo {nama},\n\nIni adalah pengingat ramah bahwa pembayaran Anda akan jatuh tempo dalam 3 hari.\n\nMohon segera lakukan pembayaran untuk menghindari keterlambatan.\n\nTerima kasih atas perhatiannya! 🙏'
+    },
+    {
+      id: 3,
+      nama: 'Ucapan Terima Kasih',
+      kategori: 'Ucapan',
+      emoji: '💙',
+      judul: 'Terima Kasih {nama}!',
+      isi: 'Hai {nama}! 😊\n\nTerima kasih sudah menjadi pelanggan setia kami!\n\nKami sangat menghargai kepercayaan Anda.\n\nSemoga produk/layanan kami bermanfaat untuk Anda.\n\nSampai jumpa di pembelian berikutnya! 🙌'
+    },
+    {
+      id: 4,
+      nama: 'Produk Baru',
+      kategori: 'Informasi',
+      emoji: '🆕',
+      judul: 'Produk Baru Telah Hadir!',
+      isi: 'Halo {nama}! ✨\n\nKami punya kabar gembira!\n\nProduk terbaru kami sudah tersedia dan siap untuk Anda.\n\n🎯 Fitur unggulan:\n• Kualitas premium\n• Harga terjangkau\n• Garansi resmi\n\nYuk, jadi yang pertama mencoba! 🚀'
+    },
+    {
+      id: 5,
+      nama: 'Follow Up',
+      kategori: 'Follow Up',
+      emoji: '📞',
+      judul: 'Follow Up dari Kami',
+      isi: 'Halo {nama}, 👋\n\nKami ingin mengetahui bagaimana pengalaman Anda dengan produk/layanan kami?\n\nApakah ada yang bisa kami bantu?\n\nFeedback Anda sangat berharga bagi kami untuk terus meningkatkan pelayanan.\n\nTerima kasih! 💚'
+    },
+    {
+      id: 6,
+      nama: 'Konfirmasi Pesanan',
+      kategori: 'Informasi',
+      emoji: '✅',
+      judul: 'Konfirmasi Pesanan Anda',
+      isi: 'Halo {nama}! ✅\n\nPesanan Anda telah kami terima dan sedang diproses.\n\nNomor pesanan: #[ISI_NOMOR]\nEstimasi pengiriman: [ISI_TANGGAL]\n\nTerima kasih telah berbelanja dengan kami! 🛍️'
+    },
+    {
+      id: 7,
+      nama: 'Reminder Stok',
+      kategori: 'Pengingat',
+      emoji: '📦',
+      judul: 'Stok Terbatas!',
+      isi: 'Halo {nama}! 📦\n\nProduk favorit Anda hampir habis!\n\nStok tinggal sedikit, buruan pesan sebelum kehabisan.\n\nJangan sampai menyesal ya! ⚡'
+    },
+    {
+      id: 8,
+      nama: 'Undangan Event',
+      kategori: 'Informasi',
+      emoji: '🎊',
+      judul: 'Undangan Spesial untuk {nama}',
+      isi: 'Hai {nama}! 🎊\n\nKami mengundang Anda ke acara spesial kami!\n\n📅 Tanggal: [ISI_TANGGAL]\n⏰ Waktu: [ISI_WAKTU]\n📍 Lokasi: [ISI_LOKASI]\n\nDitunggu kehadirannya ya! 🎉'
+    }
+  ]
 
   useEffect(()=>{ 
     async function init() {
@@ -87,6 +155,16 @@ export default function WaBlast(){
       const newPosition = start + placeholder.length
       textarea.setSelectionRange(newPosition, newPosition)
     }, 0)
+  }
+
+  // Fungsi untuk menggunakan template
+  function applyTemplate(template) {
+    setForm({
+      judul_pesan: template.judul,
+      isi_pesan: template.isi
+    })
+    // Scroll ke form
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   // eslint-disable-next-line no-unused-vars
@@ -249,6 +327,56 @@ export default function WaBlast(){
           </div>
         </div>
       )}
+
+      {/* Template Section */}
+      <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
+        <div className="flex items-center gap-2 mb-4">
+          <FileText className="h-5 w-5 text-sky-600" />
+          <h4 className="font-semibold text-slate-900">Template Pesan</h4>
+          <span className="text-xs text-slate-500">({messageTemplates.length} template siap pakai)</span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+          {messageTemplates.map(template => (
+            <button
+              key={template.id}
+              onClick={() => applyTemplate(template)}
+              className="text-left border border-slate-200 rounded-lg p-4 hover:shadow-md hover:border-sky-300 transition-all bg-gradient-to-br from-white to-slate-50 group"
+            >
+              <div className="flex items-start justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-2xl">{template.emoji}</span>
+                  <div className="flex-1 min-w-0">
+                    <h5 className="font-semibold text-slate-900 text-sm truncate group-hover:text-sky-600 transition-colors">
+                      {template.nama}
+                    </h5>
+                  </div>
+                </div>
+              </div>
+              
+              <span className="inline-block px-2 py-0.5 bg-sky-100 text-sky-700 rounded text-xs mb-2">
+                {template.kategori}
+              </span>
+
+              <div className="text-xs text-slate-600 mb-2">
+                <p className="font-medium text-slate-700 mb-1 line-clamp-1">{template.judul}</p>
+                <p className="line-clamp-2 leading-relaxed">{template.isi}</p>
+              </div>
+
+              <div className="flex items-center gap-1 text-xs text-sky-600 font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+                <Copy className="h-3 w-3" />
+                Klik untuk gunakan
+              </div>
+            </button>
+          ))}
+        </div>
+
+        <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+          <p className="text-xs text-blue-800">
+            💡 <strong>Tips:</strong> Klik template untuk langsung menggunakannya. Personalisasi otomatis dengan <code className="bg-blue-100 px-1 rounded">{'{nama}'}</code>, <code className="bg-blue-100 px-1 rounded">{'{telepon}'}</code>, <code className="bg-blue-100 px-1 rounded">{'{email}'}</code>
+          </p>
+        </div>
+      </div>
 
       {/* Form & Preview Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -420,7 +548,7 @@ export default function WaBlast(){
                         minute: '2-digit'
                       })}
                     </td>
-                    <td className="py-3 text-slate-600">{b.stats?.total_penerima || 0}</td>
+                    <td className="py-3 text-center text-slate-600">{b.stats?.total_penerima || 0}</td>
                     <td className="py-3">
                       {getStatusBadge(b.status)}
                     </td>
@@ -457,4 +585,3 @@ export default function WaBlast(){
     </div>
   )
 }
-

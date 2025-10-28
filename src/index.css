@@ -27,3 +27,71 @@ body {
 
 /* container utility */
 .container { max-width: var(--container); }
+
+@media print {
+    .report-print-header {
+        display: block !important; 
+        text-align: center;
+        margin-bottom: 10px; /* Kurangi margin */
+        padding-bottom: 5px;
+        border-bottom: 1px solid #ccc;
+        background-color: white; 
+    }
+    
+    /* Center untuk nama dan judul utama */
+    .report-print-header .umkm-name,
+    .report-print-header .report-title {
+        text-align: center;
+        margin-bottom: 3px;
+    }
+
+    /* Container untuk Periode dan Range Date (Flexbox) */
+    .report-print-header .header-details {
+        display: flex;
+        justify-content: space-between; /* Pisahkan Periode (kiri) dan Range Date (kanan) */
+        width: 100%;
+        margin-top: 5px;
+        padding: 0 10px; /* Tambahkan sedikit padding horizontal */
+        font-size: 10pt;
+    }
+
+    .report-print-header .report-periode {
+        text-align: left;
+        font-weight: bold;
+    }
+    
+    .report-print-header .report-range-date {
+        text-align: right;
+        color: #555;
+    }
+    /* 3. Penyesuaian tampilan tabel agar rapi saat dicetak */
+    .report-table-wrapper {
+        border: none !important; 
+        box-shadow: none !important; 
+        padding: 0 !important;
+        overflow: visible !important; /* Agar tabel tidak terpotong */
+    }
+
+    .report-table {
+        width: 100%;
+        border-collapse: collapse; /* Hapus spasi antar sel */
+    }
+    
+    .report-table th, .report-table td {
+        border: 1px solid #ddd; /* Tambahkan border ke setiap sel */
+        padding: 4px 8px; 
+        font-size: 9pt; 
+        color: #000 !important; 
+        white-space: nowrap; /* Cegah teks putus baris */
+    }
+    
+    /* Hilangkan summary cards saat print */
+    .report-content > .grid {
+        display: none;
+    }
+}
+
+/* Sembunyikan Report Header di layar normal (wajib) */
+.report-print-header {
+    display: none;
+}

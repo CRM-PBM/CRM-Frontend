@@ -40,3 +40,70 @@
 .read-the-docs {
   color: #888;
 }
+
+
+@media print {
+    /* 1. Sembunyikan elemen navigasi dan filter */
+    .print\:hidden {
+        display: none !important;
+    }
+    
+    /* 2. Tampilkan Report Header (yang disembunyikan di layar normal) */
+    .report-print-header {
+        display: block; 
+        text-align: center;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #ccc; /* Garis pemisah opsional */
+    }
+
+    .report-print-header .umkm-name {
+        font-size: 16pt;
+        font-weight: bold;
+        margin-bottom: 5px;
+        color: #000;
+    }
+
+    .report-print-header .report-title {
+        font-size: 14pt;
+        font-weight: 600;
+        margin-bottom: 3px;
+        color: #333;
+    }
+
+    .report-print-header .report-periode {
+        font-size: 10pt;
+        color: #555;
+    }
+    
+    /* 3. Penyesuaian tampilan tabel agar rapi saat dicetak */
+    .report-table-wrapper {
+        border: none !important; 
+        box-shadow: none !important; 
+        padding: 0 !important;
+        overflow: visible !important; /* Agar tabel tidak terpotong */
+    }
+
+    .report-table {
+        width: 100%;
+        border-collapse: collapse; /* Hapus spasi antar sel */
+    }
+    
+    .report-table th, .report-table td {
+        border: 1px solid #ddd; /* Tambahkan border ke setiap sel */
+        padding: 4px 8px; 
+        font-size: 9pt; 
+        color: #000 !important; 
+        white-space: nowrap; /* Cegah teks putus baris */
+    }
+    
+    /* Hilangkan summary cards saat print */
+    .report-content > .grid {
+        display: none;
+    }
+}
+
+/* Sembunyikan Report Header di layar normal (wajib) */
+.report-print-header {
+    display: none;
+}

@@ -26,7 +26,7 @@ export default function DashboardTopbar({ title = 'Dashboard', onToggleSidebar =
   }
 
   return (
-    <div className="mb-6 bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
+    <div className="mb-6 bg-white rounded-2xl border border-slate-200 p-4 shadow-sm print:hidden">
       <div className="flex items-center justify-between gap-4">
         {/* Left Section */}
         <div className="flex items-center gap-3 flex-1 min-w-0">
