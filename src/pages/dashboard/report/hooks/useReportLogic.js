@@ -1,10 +1,7 @@
-// --- src/pages/dashboard/report/hooks/useReportLogic.js ---
-
 import { useState, useEffect, useMemo } from 'react';
 import { toast } from 'react-toastify';
 import * as XLSX from 'xlsx';
 
-// Pastikan path ini benar sesuai struktur folder Anda
 import laporanService from '../../../../services/laporanService'; 
 import { formatDate, formatDateTime, formatRangeDate, formatMonthPeriod } from '../../../../utils/formatters'; 
 
@@ -28,7 +25,7 @@ export default function useReportLogic() {
         transaction: {
             searchTerm: '', 
             sortBy: 'tanggal_transaksi', 
-            sortDirection: 'desc', // Default tanggal terbaru
+            sortDirection: 'desc',
             filterField: 'none' 
         },
         customer: {
@@ -80,7 +77,20 @@ export default function useReportLogic() {
                     const nama = item.nama?.toLowerCase() || '';
                     const telepon = item.telepon?.toLowerCase() || '';
                     const email = item.email?.toLowerCase() || '';
-                    return nama.includes(searchTerm) || telepon.includes(searchTerm) || email.includes(searchTerm);
+                    const level = item.level?.toLowerCase() || '';
+                    const gender = item.gender?.toLowerCase() || '';
+                    const kodePelanggan = item.Kode_pelanggan?.toLowerCase() || '';
+                    const alamat = item.alamat?.toLowerCase() || '';
+                    
+                    return ( 
+                        nama.includes(searchTerm) || 
+                        telepon.includes(searchTerm) || 
+                        email.includes(searchTerm) || 
+                        level.includes(searchTerm) || 
+                        gender.includes(searchTerm) || 
+                        kodePelanggan.includes(searchTerm) || 
+                        alamat.includes(searchTerm)
+                    );
                 }
                 return true;
             });

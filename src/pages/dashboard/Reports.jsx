@@ -1,5 +1,3 @@
-// --- src/pages/dashboard/Reports.jsx (Disesuaikan) ---
-
 import React from 'react';
 import { Loader, ShoppingCart, Users, FileText } from 'lucide-react';
 
@@ -7,15 +5,12 @@ import { Loader, ShoppingCart, Users, FileText } from 'lucide-react';
 import useReportLogic from './report/hooks/useReportLogic';
 import TabButton from './report/Components/TabButton';
 import FilterCard from './report/Components/FilterCard';
-// import ReportHeader from './report/Components/ReportHeader'; // Hapus impor ReportHeader dari sini
 
-// Import komponen anak yang sudah ada di folder report/
 import CustomerReports from './report/CustomerReports'; 
 import TransactionReports from './report/TransactionReports';
 
 export default function Reports() {
     
-    // --- 1. Ambil semua logic dari Custom Hook, termasuk list yang sudah diproses ---
     const { 
         state, handlers, computed, list 
     } = useReportLogic();
@@ -35,18 +30,16 @@ export default function Reports() {
         rangeDate: rangeDateDisplay,
     };
     
-    // --- 3. Tentukan Judul Laporan Dinamis ---
-    const transactionReportTitle = 'LAPORAN PENJUALAN BULANAN';
+    const transactionReportTitle = 'LAPORAN TRANSAKSI BULANAN';
     const customerReportTitle = 'LAPORAN PELANGGAN BULANAN';
 
-    // --- 4. JSX RENDER ---
     return (
         <div className="space-y-6">
 
             {/* Tab Navigation */}
             <div className="flex border-b border-slate-200 print:hidden">
                 <TabButton 
-                    label="Laporan Penjualan" 
+                    label="Laporan Transaksi" 
                     icon={ShoppingCart} 
                     isActive={activeTab === 'transaction'} 
                     onClick={() => setActiveTab('transaction')} 
@@ -76,9 +69,6 @@ export default function Reports() {
             {/* Laporan Content */}
             {!loading && (
                 <div className="print-area">
-                    {/* HAPUS ReportHeader DI SINI */}
-                    {/* ReportHeader AKAN DIRENDER DI DALAM TransactionReports & CustomerReports */}
-
                     {/* Transaction Report */}
                     {activeTab === 'transaction' && (
                         <TransactionReports 
@@ -89,7 +79,6 @@ export default function Reports() {
                             handleExport={handleExport}
                             isDataReady={isDataReady}
                             loading={loading}
-                            // PERUBAHAN UTAMA: Oper data header + title
                             reportHeaderData={{...reportHeaderData, reportTitle: transactionReportTitle}}
                         />
                     )}
@@ -104,7 +93,6 @@ export default function Reports() {
                             handleExport={handleExport}
                             isDataReady={isDataReady}
                             loading={loading}
-                            // PERUBAHAN UTAMA: Oper data header + title
                             reportHeaderData={{...reportHeaderData, reportTitle: customerReportTitle}}
                         />
                     )}

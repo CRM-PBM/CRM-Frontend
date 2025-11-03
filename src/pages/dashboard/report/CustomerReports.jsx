@@ -1,9 +1,10 @@
 import React from 'react';
-import { Users, Banknote, TrendingUp, ChevronDown, ChevronUp } from 'lucide-react';
+import { Users, Banknote, TrendingUp } from 'lucide-react';
 import { formatCurrency, formatDate } from '../../../utils/formatters'; 
 import ActionButtons from './Components/ActionButtons'; 
 import ReportHeader from './Components/ReportHeader';
 
+// --- Komponen Filter dan Sort ---
 function CustomerFilterSort({ filterState, setFilter }) {
     const updateFilter = (newValues) => {
         setFilter(prev => ({
@@ -22,10 +23,9 @@ function CustomerFilterSort({ filterState, setFilter }) {
 
     return (
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 mb-4 print:hidden">
-            {/* Field Pencarian */}
             <input
                 type="text"
-                placeholder="Cari Nama/Telepon/Email Pelanggan..."
+                placeholder="Cari Pelanggan sesuai kolom..."
                 value={filterState.searchTerm}
                 onChange={(e) => updateFilter({ searchTerm: e.target.value })}
                 className="w-full md:w-1/3 p-2 border border-slate-300 rounded-lg text-sm"
@@ -56,7 +56,7 @@ function CustomerFilterSort({ filterState, setFilter }) {
     );
 }
 
-// PERUBAHAN UTAMA: Tambahkan 'reportHeaderData' di prop destructuring
+// --- Komponen Utama CustomerReports ---
 export default function CustomerReports({ list, filterState, setFilter, handleExport, isDataReady, loading, reportHeaderData }) {
     const totalCustomers = list.length;
     const totalTransactions = list.reduce((sum, c) => sum + (c.jumlah_transaksi || 0), 0);
@@ -70,7 +70,7 @@ export default function CustomerReports({ list, filterState, setFilter, handleEx
             let newDirection = 'desc';
             if (currentFilter.sortBy === sortBy) {
                 newDirection = currentFilter.sortDirection === 'desc' ? 'asc' : 'desc';
-            } else if (sortBy === 'nama') {
+            } else if (sortBy === 'nama' || sortBy === 'level') { 
                 newDirection = 'asc';
             }
             
@@ -87,25 +87,24 @@ export default function CustomerReports({ list, filterState, setFilter, handleEx
     return (
         <div className="space-y-6 report-content">
             
-            {/* PERUBAHAN UTAMA 1: RENDER REPORT HEADER HANYA SAAT PRINT */}
+            {/* Report Header untuk Print */}
             <div className="hidden print:block">
                  <ReportHeader 
-                    umkmName={umkmName}
-                    reportTitle={reportTitle}
-                    periode={periode}
-                    rangeDate={rangeDate}
-                />
+                     umkmName={umkmName}
+                     reportTitle={reportTitle}
+                     periode={periode}
+                     rangeDate={rangeDate}
+                 />
             </div>
-            {/* -------------------------------------------------------- */}
             
-            {/* Header Laporan (Judul Utama & Action Button di dalam Div ini) */}
+            {/* Header Laporan (Judul Utama & Action Button) */}
             <div className="flex justify-between items-center mb-4">
                 <h4 className="text-xl font-semibold text-slate-900 print:hidden">Laporan Pelanggan</h4>
             </div>
 
-            {/* Summary/Statistics */}
+            {/* Summary/Statistics (tetap sama) */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 print:hidden">
-                {/* ... Cards code (omitted for brevity) ... */}
+                
                 <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
                     <div className="flex items-center gap-3">
                         <div className="p-2 bg-sky-200 rounded-lg">
@@ -113,7 +112,7 @@ export default function CustomerReports({ list, filterState, setFilter, handleEx
                         </div>
                         <div>
                             <p className="text-sm text-slate-600">Total Pelanggan Aktif</p>
-                            <p className="text-2xl font-bold text-slate-900">{totalCustomers}</p>
+                            <p className="text-2xl font-bold text-sky-600">{totalCustomers}</p>
                         </div>
                     </div>
                 </div>
@@ -125,7 +124,7 @@ export default function CustomerReports({ list, filterState, setFilter, handleEx
                         </div>
                         <div>
                             <p className="text-sm text-slate-600">Total Pembelian (LTV)</p>
-                            <p className="text-2xl font-bold text-slate-900">{formatCurrency(totalPurchases)}</p>
+                            <p className="text-2xl font-bold text-green-600">{formatCurrency(totalPurchases)}</p>
                         </div>
                     </div>
                 </div>
@@ -137,7 +136,7 @@ export default function CustomerReports({ list, filterState, setFilter, handleEx
                         </div>
                         <div>
                             <p className="text-sm text-slate-600">Pelanggan Terbaik</p>
-                            <p className="text-xl font-bold text-slate-900 truncate" title={topSpender ? topSpender.nama : 'N/A'}>{topSpender ? topSpender.nama : 'N/A'}</p>
+                            <p className="text-xl font-bold text-purple-600 truncate" title={topSpender ? topSpender.nama : 'N/A'}>{topSpender ? topSpender.nama : 'N/A'}</p>
                         </div>
                     </div>
                 </div>
@@ -149,7 +148,7 @@ export default function CustomerReports({ list, filterState, setFilter, handleEx
                         </div>
                         <div>
                             <p className="text-sm text-slate-600">Jumlah Transaksi</p>
-                            <p className="text-2xl font-bold text-slate-900">{totalTransactions}</p>
+                            <p className="text-2xl font-bold text-orange-600">{totalTransactions}</p>
                         </div>
                     </div>
                 </div>
@@ -167,24 +166,29 @@ export default function CustomerReports({ list, filterState, setFilter, handleEx
 
                 <div className="overflow-x-auto">
                     <table className="min-w-full divide-y divide-slate-200 report-table">
-                        <thead className="bg-slate-50">
+                        <thead className="bg-slate-100">
                             <tr>
-                                <th scope="col" className="px-2 py-1.5 w-10 text-center">No</th>
-                                <th scope="col" className="px-2 py-1.5" onClick={() => handleHeaderSort('nama')}>
+                                <th scope="col" className="px-2 py-1.5 w-10 text-center text-xs font-semibold text-slate-700 whitespace-nowrap">No</th>
+                                <th scope="col" className="px-2 py-1.5 text-left text-xs font-semibold text-slate-700 w-1/6 whitespace-nowrap" onClick={() => handleHeaderSort('nama')}>
                                     Nama
                                 </th>
-                                <th scope="col" className="px-2 py-1.5">Kode Pelanggan</th>
-                                <th scope="col" className="px-2 py-1.5">Telepon</th>
-                                <th scope="col" className="px-2 py-1.5">Email</th> 
-                                <th scope="col" className="px-2 py-1.5">Alamat</th> 
-                                <th scope="col" className="px-2 py-1.5">Level</th> 
-                                <th scope="col" className="px-2 py-1.5" onClick={() => handleHeaderSort('created_at')}>
+                                <th scope="col" className="px-2 py-1.5 text-center text-xs font-semibold text-slate-700 whitespace-nowrap" onClick={() => handleHeaderSort('Kode_pelanggan')}>
+                                    Kode Pelanggan
+                                </th>
+                                <th scope="col" className="px-2 py-1.5 text-center text-xs font-semibold text-slate-700 whitespace-nowrap">Gender</th>
+                                <th scope="col" className="px-2 py-1.5 text-center text-xs font-semibold text-slate-700 whitespace-nowrap">Telepon</th>
+                                <th scope="col" className="px-2 py-1.5 text-left text-xs font-semibold text-slate-700 w-1/6 whitespace-nowrap">Email</th> 
+                                <th scope="col" className="px-2 py-1.5 text-left text-xs font-semibold text-slate-700 w-1/5 whitespace-nowrap">Alamat</th> 
+                                <th scope="col" className="px-2 py-1.5 text-center text-xs font-semibold text-slate-700 whitespace-nowrap" onClick={() => handleHeaderSort('level')}>
+                                    Level
+                                </th> 
+                                <th scope="col" className="px-2 py-1.5 text-center text-xs font-semibold text-slate-700 whitespace-nowrap" onClick={() => handleHeaderSort('created_at')}>
                                     Tanggal Daftar
                                 </th>
-                                <th scope="col" className="px-2 py-1.5 text-right" onClick={() => handleHeaderSort('jumlah_transaksi')}>
+                                <th scope="col" className="px-2 py-1.5 text-right text-xs font-semibold text-slate-700 whitespace-nowrap" onClick={() => handleHeaderSort('jumlah_transaksi')}>
                                     Jml Transaksi
                                 </th>
-                                <th scope="col" className="px-2 py-1.5 text-right" onClick={() => handleHeaderSort('total_pembelian')}>
+                                <th scope="col" className="px-2 py-1.5 text-right text-xs font-semibold text-slate-700 whitespace-nowrap" onClick={() => handleHeaderSort('total_pembelian')}>
                                     Total LTV 
                                 </th>
                             </tr>
@@ -192,30 +196,43 @@ export default function CustomerReports({ list, filterState, setFilter, handleEx
                         <tbody className="bg-white divide-y divide-slate-200">
                             {list.length > 0 ? list.map((c, index) => (
                                 <tr key={c.pelanggan_id || index} className="border-b hover:bg-slate-50">
-                                    <td className="px-2 py-1.5 font-medium text-slate-900 text-center">{index + 1}</td>
-                                    <td className="px-2 py-1.5 text-xs">{c.nama}</td>
-                                    <td className="px-2 py-1.5 text-xs text-center">{c.kode_pelanggan || '-'}</td>
-                                    <td className="px-2 py-1.5 text-xs text-center">{c.telepon || '-'}</td>
-                                    <td className="px-2 py-1.5 text-xs">{c.email || '-'}</td>
-                                    <td className="px-2 py-1.5 text-xs">{c.alamat || '-'}</td>
-                                    <td className="px-2 py-1.5 text-xs text-center">{c.level || 'Umum'}</td>
-                                    <td className="px-2 py-1.5 text-xs text-center">{formatDate(c.created_at)}</td>
-                                    <td className="px-2 py-1.5 text-right text-xs">{c.jumlah_transaksi || 0} Transaksi</td>
-                                    <td className="px-2 py-1.5 text-right font-semibold text-xs">{formatCurrency(c.total_pembelian || 0)}</td>
+                                    <td className="px-2 py-1.5 font-medium text-slate-900 text-center text-xs whitespace-nowrap">{index + 1}</td>
+                                    <td className="px-2 py-1.5 text-xs text-slate-800 font-medium whitespace-nowrap">{c.nama}</td>
+                                    <td className="px-2 py-1.5 text-xs text-slate-600 text-center whitespace-nowrap">{c.Kode_pelanggan || '-'}</td>
+                                    <td className="px-2 py-1.5 text-xs text-slate-600 text-center whitespace-nowrap">
+                                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${c.gender == 'Pria' ? 'bg-blue-100 text-blue-700' : 'bg-pink-100 text-pink-700'}`}>
+                                            {c.gender}
+                                        </span>
+                                    </td>
+                                    <td className="px-2 py-1.5 text-xs text-slate-600 text-center whitespace-nowrap">{c.telepon || '-'}</td>
+                                    <td className="px-2 py-1.5 text-xs text-slate-600 truncate max-w-xs">{c.email || '-'}</td>
+                                    <td className="px-2 py-1.5 text-xs text-slate-600 truncate max-w-xs">{c.alamat || '-'}</td>
+                                    <td className="px-2 py-1.5 text-xs text-slate-800 font-semibold text-center whitespace-nowrap">
+                                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                                            c.level === 'Platinum' ? 'bg-purple-100 text-purple-700' :
+                                            c.level === 'Gold' ? 'bg-yellow-100 text-yellow-700' :
+                                            c.level === 'Silver' ? 'bg-slate-100 text-slate-700' :
+                                            'bg-orange-100 text-orange-700'
+                                        }`}>
+                                            {c.level}
+                                        </span>
+                                    </td>
+                                    <td className="px-2 py-1.5 text-xs text-slate-600 text-center whitespace-nowrap">{formatDate(c.created_at)}</td>
+                                    <td className="px-2 py-1.5 text-right text-xs text-orange-600 whitespace-nowrap">{c.jumlah_transaksi || 0} Transaksi</td>
+                                    <td className="px-2 py-1.5 text-right font-semibold text-xs text-green-700 whitespace-nowrap">{formatCurrency(c.total_pembelian || 0)}</td>
                                 </tr>
                             )) : (
                                 <tr>
-                                    <td colSpan="9" className="text-center py-4 text-slate-500">Tidak ada data pelanggan dalam periode ini atau tidak ada data yang cocok dengan filter.</td>
+                                    <td colSpan={10} className="text-center py-4 text-slate-500">Tidak ada data pelanggan dalam periode ini atau tidak ada data yang cocok dengan filter.</td>
                                 </tr>
                             )}
                         </tbody>
-                        
-                        {/* Field Total Keseluruhan di Footer - Total 9 Kolom */}
                         <tfoot className="text-sm font-bold bg-slate-100 border-t border-slate-300">
                             <tr>
-                                <td colSpan="8" className="px-2 py-2 text-right">TOTAL KESELURUHAN:</td>
-                                <td className="px-2 py-2 text-right text-sky-600">{totalTransactions} Transaksi</td>
-                                <td className="px-2 py-2 text-right text-green-700">{formatCurrency(totalPurchases)}</td>
+                                <td colSpan={7} className="px-4 py-2 text-right whitespace-nowrap">TOTAL KESELURUHAN:</td>
+                                <td className="px-2 py-2 text-right text-sky-600 whitespace-nowrap">{totalCustomers} Pelanggan</td>
+                                <td className="px-2 py-2 text-right text-orange-600 whitespace-nowrap">{totalTransactions} Transaksi</td>
+                                <td className="px-2 py-2 text-right text-green-700 whitespace-nowrap">{formatCurrency(totalPurchases)}</td>
                             </tr>
                         </tfoot>
                     </table>
