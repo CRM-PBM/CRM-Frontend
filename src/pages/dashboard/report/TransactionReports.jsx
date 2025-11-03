@@ -4,16 +4,13 @@ import ReportHeader from './Components/ReportHeader'; // PASTIKAN SUDAH DI-IMPOR
 import { formatCurrency, formatDateTime } from '../../../utils/formatters';
 import { ChevronDown, ChevronUp, ShoppingCart, Banknote, BarChart, TrendingUp } from 'lucide-react'; 
 
-// Sub-Komponen TransactionFilterSort (Tidak Berubah)
 function TransactionFilterSort({ filterState, setFilter }) {
-    // ... (Logika sama) ...
     const updateFilter = (newValues) => {
         setFilter(prev => ({
             ...prev,
             transaction: { ...prev.transaction, ...newValues }
         }));
     };
-    // ... (Logika sama) ...
     const sortOptions = [
         { value: 'tanggal_transaksi', label: 'Tgl Transaksi' },
         { value: 'total', label: 'Total Transaksi' },
@@ -54,7 +51,6 @@ function TransactionFilterSort({ filterState, setFilter }) {
     );
 }
 
-// PERUBAHAN UTAMA: Tambahkan 'reportHeaderData' di prop destructuring
 export default function TransactionReports({ summary, list, filterState, setFilter, handleExport, isDataReady, loading, reportHeaderData }) {
     
     // Perhitungan total untuk Footer
@@ -81,9 +77,9 @@ export default function TransactionReports({ summary, list, filterState, setFilt
     return (
         <div className="space-y-6 report-content">
             
-            {/* PERUBAHAN UTAMA 1: RENDER REPORT HEADER HANYA SAAT PRINT */}
+            {/* RENDER REPORT HEADER HANYA SAAT PRINT */}
             <div className="hidden print:block">
-                 <ReportHeader 
+                <ReportHeader 
                     umkmName={umkmName}
                     reportTitle={reportTitle}
                     periode={periode}
@@ -99,7 +95,6 @@ export default function TransactionReports({ summary, list, filterState, setFilt
 
             {/* Summary Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 print:hidden">
-                {/* ... Cards code (omitted for brevity) ... */}
                 <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
                     <div className="flex items-center gap-3">
                         <div className="p-2 bg-sky-200 rounded-lg">
@@ -186,9 +181,19 @@ export default function TransactionReports({ summary, list, filterState, setFilt
                                         <td className="px-2 py-1.5 text-xs">{formatDateTime(t.tanggal_transaksi)}</td>
                                         <td className="px-2 py-1.5 text-sky-600">{t.kode_transaksi || `ID#${t.transaksi_id}`}</td>
                                         <td className="px-2 py-1.5 text-xs">{t.Pelanggan?.nama || 'Umum'}</td>
-                                        <td className="px-2 py-1.5 text-xs">{t.metode_pembayaran}</td>
-                                        <td className="px-2 py-1.5 text-xs">{t.nomor_transaksi}</td>
-                                        <td className="px-2 py-1.5 text-right font-semibold">{formatCurrency(t.total)}</td>
+                                        <td className="px-2 py-1.5 text-xs">
+                                            <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                                                t.metode_pembayaran === 'Cash' ? 'bg-green-100 text-green-700' :
+                                                t.metode_pembayaran === 'Transfer' ? 'bg-yellow-200 text-yellow-700' :
+                                                t.metode_pembayaran === 'E-Wallet' ? 'bg-blue-100 text-blue-700' :
+                                                t.metode_pembayaran === 'Credit' ? 'bg-slate-100 text-slate-700' :
+                                                'bg-orange-100 text-orange-700'
+                                            }`}>
+                                                {t.metode_pembayaran}
+                                            </span>
+                                        </td>
+                                        <td className="text-xs px-2 py-1.5 font-medium text-blue-700">{t.nomor_transaksi}</td>
+                                        <td className="px-2 py-1.5 text-right text-green-600 font-semibold">{formatCurrency(t.total)}</td>
                                     </tr>
                                 );
                             }) : (
@@ -203,7 +208,7 @@ export default function TransactionReports({ summary, list, filterState, setFilt
                             <tr>
                                 <td colSpan="5" className="px-2 py-2 text-right">TOTAL KESELURUHAN:</td>
                                 <td className="px-2 py-2 text-center text-sky-600">{totalTransactions} Transaksi</td>
-                                <td className="px-2 py-2 text-right text-green-700">{formatCurrency(totalPurcashes)}</td>
+                                <td className="px-2 py-2 text-right text-green-600">{formatCurrency(totalPurcashes)}</td>
                             </tr>
                         </tfoot>
                     </table>

@@ -229,7 +229,7 @@ export default function CustomerReports({ list, filterState, setFilter, handleEx
                         </tbody>
                         <tfoot className="text-sm font-bold bg-slate-100 border-t border-slate-300">
                             <tr>
-                                <td colSpan={7} className="px-4 py-2 text-right whitespace-nowrap">TOTAL KESELURUHAN:</td>
+                                <td colSpan={8} className="px-4 py-2 text-right whitespace-nowrap">TOTAL KESELURUHAN:</td>
                                 <td className="px-2 py-2 text-right text-sky-600 whitespace-nowrap">{totalCustomers} Pelanggan</td>
                                 <td className="px-2 py-2 text-right text-orange-600 whitespace-nowrap">{totalTransactions} Transaksi</td>
                                 <td className="px-2 py-2 text-right text-green-700 whitespace-nowrap">{formatCurrency(totalPurchases)}</td>
