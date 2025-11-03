@@ -1,9 +1,9 @@
 import React from 'react';
 import { Search, Download, Loader } from 'lucide-react';
 
-export default function FilterCard({ state, handlers, isDataReady }) {
+export default function FilterCard({ state, handlers }) {
     const { startDate, endDate, loading, today } = state;
-    const { setStartDate, setEndDate, fetchReports, handleExport } = handlers;
+    const { setStartDate, setEndDate, fetchReports } = handlers;
 
     return (
         <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm print:hidden">
@@ -40,24 +40,6 @@ export default function FilterCard({ state, handlers, isDataReady }) {
                         Lihat Laporan
                     </button>
                 </div>
-            </div>
-            
-            {/* Export & Print */}
-            <div className="flex justify-end gap-2 mt-3 pt-3 border-t border-slate-100">
-                <button
-                    onClick={() => window.print()}
-                    disabled={loading || !isDataReady}
-                    className="flex items-center gap-2 px-3 py-1 text-sm text-slate-700 bg-slate-100 border border-slate-300 rounded-lg hover:bg-slate-200 disabled:opacity-50 print-button"
-                >
-                    Cetak (Print)
-                </button>
-                <button
-                    onClick={handleExport}
-                    disabled={loading || !isDataReady}
-                    className="flex items-center gap-2 px-3 py-1 text-sm text-green-700 bg-green-100 border border-green-300 rounded-lg hover:bg-green-200 disabled:opacity-50 export-button"
-                >
-                    <Download className="h-4 w-4" /> Export Excel
-                </button>
             </div>
         </div>
     );

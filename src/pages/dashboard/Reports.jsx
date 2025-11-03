@@ -1,3 +1,5 @@
+// --- src/pages/dashboard/Reports.jsx (Disesuaikan) ---
+
 import React from 'react';
 import { Loader, ShoppingCart, Users, FileText } from 'lucide-react';
 
@@ -5,35 +7,49 @@ import { Loader, ShoppingCart, Users, FileText } from 'lucide-react';
 import useReportLogic from './report/hooks/useReportLogic';
 import TabButton from './report/Components/TabButton';
 import FilterCard from './report/Components/FilterCard';
-import ReportHeader from './report/Components/ReportHeader';
+// import ReportHeader from './report/Components/ReportHeader'; // Hapus impor ReportHeader dari sini
 
 // Import komponen anak yang sudah ada di folder report/
-import SalesReports from './report/SalesReports'; 
 import CustomerReports from './report/CustomerReports'; 
+import TransactionReports from './report/TransactionReports';
 
 export default function Reports() {
     
-    // --- 1. Ambil semua logic dari Custom Hook ---
+    // --- 1. Ambil semua logic dari Custom Hook, termasuk list yang sudah diproses ---
     const { 
-        state, handlers, computed 
+        state, handlers, computed, list 
     } = useReportLogic();
     
-    const { loading, activeTab, salesReportData, salesTransactionList, customerReportData } = state;
-    const { setActiveTab } = handlers;
-    const { isDataReady, dynamicUmkmName, periodDisplay, rangeDateDisplay } = computed;
+    const { loading, activeTab, transactionReportData, customerReportData } = state;
+    const { setActiveTab, handleExport, setFilter } = handlers;
+    const { isDataReady, dynamicUmkmName, periodDisplay, rangeDateDisplay, filter } = computed;
 
+    // Ambil list yang sudah difilter/disortir
+    const processedTransactionList = list.transaction;
+    const processedCustomerList = list.customer;
 
-    // --- 2. JSX RENDER ---
+    // --- 2. Siapkan Data Header untuk Dioper ke Komponen Anak ---
+    const reportHeaderData = {
+        umkmName: dynamicUmkmName,
+        periode: periodDisplay,
+        rangeDate: rangeDateDisplay,
+    };
+    
+    // --- 3. Tentukan Judul Laporan Dinamis ---
+    const transactionReportTitle = 'LAPORAN PENJUALAN BULANAN';
+    const customerReportTitle = 'LAPORAN PELANGGAN BULANAN';
+
+    // --- 4. JSX RENDER ---
     return (
         <div className="space-y-6">
 
-            {/* Tab Navigation (Menggunakan TabButton) */}
+            {/* Tab Navigation */}
             <div className="flex border-b border-slate-200 print:hidden">
                 <TabButton 
                     label="Laporan Penjualan" 
                     icon={ShoppingCart} 
-                    isActive={activeTab === 'sales'} 
-                    onClick={() => setActiveTab('sales')} 
+                    isActive={activeTab === 'transaction'} 
+                    onClick={() => setActiveTab('transaction')} 
                 />
                 <TabButton 
                     label="Laporan Pelanggan" 
@@ -43,11 +59,10 @@ export default function Reports() {
                 />
             </div>
 
-            {/* Filter Card (Menggunakan FilterCard) */}
+            {/* Filter Card */}
             <FilterCard 
                 state={state} 
                 handlers={handlers} 
-                isDataReady={isDataReady}
             />
 
             {/* Loading State */}
@@ -61,22 +76,36 @@ export default function Reports() {
             {/* Laporan Content */}
             {!loading && (
                 <div className="print-area">
-                    <ReportHeader 
-                        umkmName={dynamicUmkmName}
-                        reportTitle={activeTab === 'sales' ? 'LAPORAN PENJUALAN BULANAN' : 'LAPORAN PELANGGAN BULANAN'}
-                        periode={periodDisplay}
-                        rangeDate={rangeDateDisplay}
-                    />
+                    {/* HAPUS ReportHeader DI SINI */}
+                    {/* ReportHeader AKAN DIRENDER DI DALAM TransactionReports & CustomerReports */}
 
-                    {activeTab === 'sales' && (
-                        <SalesReports 
-                            summary={salesReportData} 
-                            list={salesTransactionList} 
+                    {/* Transaction Report */}
+                    {activeTab === 'transaction' && (
+                        <TransactionReports 
+                            summary={transactionReportData} 
+                            list={processedTransactionList} 
+                            filterState={filter.transaction}
+                            setFilter={setFilter}
+                            handleExport={handleExport}
+                            isDataReady={isDataReady}
+                            loading={loading}
+                            // PERUBAHAN UTAMA: Oper data header + title
+                            reportHeaderData={{...reportHeaderData, reportTitle: transactionReportTitle}}
                         />
                     )}
+                    
+                    {/* Customer Report */}
                     {activeTab === 'customer' && (
-                        <CustomerReports 
-                            list={customerReportData} 
+                        <CustomerReports
+                            summary={customerReportData}
+                            list={processedCustomerList} 
+                            filterState={filter.customer}
+                            setFilter={setFilter}
+                            handleExport={handleExport}
+                            isDataReady={isDataReady}
+                            loading={loading}
+                            // PERUBAHAN UTAMA: Oper data header + title
+                            reportHeaderData={{...reportHeaderData, reportTitle: customerReportTitle}}
                         />
                     )}
                 </div>

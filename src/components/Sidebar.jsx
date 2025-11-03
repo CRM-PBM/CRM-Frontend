@@ -4,7 +4,7 @@ import {
   FileText, Settings, LogOut, X, ChevronLeft, ChevronRight, ShoppingBasket 
 } from 'lucide-react'
 
-// 🔹 Helper untuk ambil inisial dari nama UMKM
+
 function getInitials(name) {
   if (!name) return 'U'
   return name
@@ -54,7 +54,7 @@ export default function Sidebar({ view, setView, sidebarOpen, setSidebarOpen, co
     <>
       {/* Mobile Overlay */}
       <div
-        className={`fixed inset-0 bg-black/50 z-40 md:hidden transition-opacity duration-300 ${
+        className={`fixed inset-0 bg-black/50 z-40 md:hidden transition-opacity duration-300 print:hidden${
           sidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
         onClick={() => setSidebarOpen(false)}
@@ -62,7 +62,7 @@ export default function Sidebar({ view, setView, sidebarOpen, setSidebarOpen, co
 
       {/* 📱 Mobile Sidebar */}
       <aside
-        className={`fixed top-0 left-0 z-50 h-full w-72 bg-white shadow-xl md:hidden transform transition-transform duration-300 ease-out ${
+        className={`app-sidebar fixed top-0 left-0 z-50 h-full w-72 bg-white shadow-xl md:hidden transform transition-transform duration-300 ease-out${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
@@ -135,7 +135,7 @@ export default function Sidebar({ view, setView, sidebarOpen, setSidebarOpen, co
       </aside>
 
       {/* 💻 Desktop Sidebar */}
-      <div className={`hidden md:block h-full transition-all duration-300 ${collapsed ? 'w-20' : 'w-72'}`}>
+      <div className={`app-sidebar hidden md:block h-full transition-all duration-300 ${collapsed ? 'w-20' : 'w-72'}`}>
         <aside className="h-full bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
           {/* Header */}
           <div className={`p-5 border-b border-slate-100 ${collapsed ? 'p-3' : ''}`}>

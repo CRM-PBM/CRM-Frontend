@@ -1,12 +1,12 @@
 import api from './authService'
 
 const LaporanService = {
-    getSalesReports: async (params = {}) => {
+    getTransactionReports: async (params = {}) => {
         try {
-            const response = await api.get('/laporan/penjualan', { params });
+            const response = await api.get('/laporan/transaksi', { params });
             return response.data;
         } catch (error) {
-            console.error('Error fetching sales report:', error);
+            console.error('Error fetching transaction report:', error);
             throw error;
         }
     },

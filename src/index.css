@@ -2,96 +2,159 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Minimal base overrides to keep the previous look where needed */
 :root {
-  --font-sans: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
-  --container: 72rem;
-  --muted: #6b7280;
+    --font-sans: "Inter", system-ui, Avenir, Helvetica, Arial, sans-serif;
+    --container: 72rem;
+    --muted: #6b7280;
 }
 
-html, body, #root {
-  height: 100%;
+html,
+body,
+#root {
+    height: 100%;
 }
 
 body {
-  font-family: var(--font-sans);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
-/* small helper styles used by older CSS in the project */
-.logo { height: 48px }
+.logo {
+    height: 48px;
+}
 
-/* professional card shadow */
-.card-shadow { box-shadow: 0 10px 30px rgba(2,6,23,0.08); }
+.card-shadow {
+    box-shadow: 0 10px 30px rgba(2, 6, 23, 0.08);
+}
 
-/* container utility */
-.container { max-width: var(--container); }
+.container {
+    max-width: var(--container);
+}
+
+.report-print-header {
+    display: none;
+}
 
 @media print {
-    .report-print-header {
-        display: block !important; 
-        text-align: center;
-        margin-bottom: 10px; /* Kurangi margin */
-        padding-bottom: 5px;
-        border-bottom: 1px solid #ccc;
-        background-color: white; 
-    }
-    
-    /* Center untuk nama dan judul utama */
-    .report-print-header .umkm-name,
-    .report-print-header .report-title {
-        text-align: center;
-        margin-bottom: 3px;
+    @page {
+        margin: 0.5cm !important;
+        size: A4 landscape;
     }
 
-    /* Container untuk Periode dan Range Date (Flexbox) */
-    .report-print-header .header-details {
-        display: flex;
-        justify-content: space-between; /* Pisahkan Periode (kiri) dan Range Date (kanan) */
-        width: 100%;
-        margin-top: 5px;
-        padding: 0 10px; /* Tambahkan sedikit padding horizontal */
-        font-size: 10pt;
-    }
-
-    .report-print-header .report-periode {
-        text-align: left;
-        font-weight: bold;
-    }
-    
-    .report-print-header .report-range-date {
-        text-align: right;
-        color: #555;
-    }
-    /* 3. Penyesuaian tampilan tabel agar rapi saat dicetak */
-    .report-table-wrapper {
-        border: none !important; 
-        box-shadow: none !important; 
+    /* 1. Reset Semua Elemen Root dan Pembungkus Utama */
+    html,
+    body,
+    #root {
+        height: auto !important;
+        overflow: visible !important;
+        width: 100% !important;
         padding: 0 !important;
-        overflow: visible !important; /* Agar tabel tidak terpotong */
+        margin: 0 !important;
+    }
+
+    /* Target div utama di Dashboard.jsx: <div className="flex h-screen overflow-hidden"> */
+    .flex.h-screen.overflow-hidden {
+        display: block !important; /* Nonaktifkan Flexbox */
+        height: auto !important; /* Hapus Batasan Tinggi Layar */
+        overflow: visible !important; /* Hapus Batasan Overflow */
+        width: 100% !important;
+    }
+
+    /* Target elemen <main> dari Dashboard.jsx */
+    main {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 100% !important;
+        /* Padding ini menjadi margin global untuk laporan Anda */
+        padding: 0.5cm !important;
+        margin: 0 !important;
+        overflow: visible !important;
+    }
+
+    /* 2. Sembunyikan Elemen Antarmuka */
+    .app-sidebar,
+    .sidebar,
+    .top-navbar,
+    .fixed,
+    .print\:hidden {
+        display: none !important;
+    }
+
+    /* Sembunyikan judul yang duplikat */
+    .report-table-wrapper > div.flex.justify-between,
+    .space-y-6 > div.flex.justify-between.items-center.mb-4.print\:hidden {
+        display: none !important;
+    }
+
+    /* 3. Penyesuaian Laporan dan Tabel */
+
+    /* Target Pembungkus Laporan */
+    .space-y-6 {
+        width: 100% !important;
+        max-width: 100% !important;
+        overflow: visible !important;
+    }
+
+    /* Target Pembungkus Tabel di file laporan */
+    .report-table-wrapper {
+        box-shadow: none !important;
+        border: none !important;
+        padding: 0 !important;
+        overflow: visible !important;
+        width: 100% !important;
+    }
+
+    .report-table,
+    .overflow-x-auto,
+    .w-full {
+        width: 100% !important;
+        max-width: 100% !important;
     }
 
     .report-table {
-        width: 100%;
-        border-collapse: collapse; /* Hapus spasi antar sel */
+        border-collapse: collapse;
+        table-layout: auto;
     }
-    
-    .report-table th, .report-table td {
-        border: 1px solid #ddd; /* Tambahkan border ke setiap sel */
-        padding: 4px 8px; 
-        font-size: 9pt; 
-        color: #000 !important; 
-        white-space: nowrap; /* Cegah teks putus baris */
-    }
-    
-    /* Hilangkan summary cards saat print */
-    .report-content > .grid {
-        display: none;
-    }
-}
 
-/* Sembunyikan Report Header di layar normal (wajib) */
-.report-print-header {
-    display: none;
+    .report-table th,
+    .report-table td {
+        font-size: 8pt !important;
+        padding: 4px 5px !important;
+        line-height: 1.1;
+        border: 1px solid #000 !important;
+    }
+
+    /* Penyesuaian Teks dan Footer */
+    .report-table td:nth-child(7),
+    .report-table td:nth-child(8),
+    .report-table td:nth-child(9) {
+        text-align: right !important;
+        white-space: nowrap;
+    }
+
+    .report-table tfoot td {
+        background-color: #e5e7eb !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+        border-top: 2px solid #000 !important;
+    }
+
+    /* Tampilkan Report Header */
+    .report-print-header {
+        display: block !important;
+        margin-bottom: 0;
+    }
+    .report-print-header .umkm-name,
+    .report-print-header .report-title {
+        text-align: center;
+        margin: 0;
+        font-size: 15pt;
+    }
+    .report-print-header .header-details {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 5px;
+        margin-bottom: 5px;
+    }
 }
