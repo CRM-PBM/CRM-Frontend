@@ -15,9 +15,7 @@ function getInitials(name) {
     .slice(0, 3)
 }
 
-export default function Sidebar({ view, setView, sidebarOpen, setSidebarOpen, collapsed, setCollapsed }){
-  const navigate = useNavigate()
-  
+export default function Sidebar({ view, setView, sidebarOpen, setSidebarOpen, collapsed, setCollapsed }) {
   const items = [
     { key: 'overview', label: 'Ringkasan', icon: Home },
     { key: 'customers', label: 'Pelanggan', icon: Users },
@@ -27,34 +25,6 @@ export default function Sidebar({ view, setView, sidebarOpen, setSidebarOpen, co
     { key: 'wa', label: 'Kirim WA', icon: MessageSquare },
     { key: 'reports', label: 'Laporan', icon: FileText },
   ]
-
-  const handleLogout = async () => {
-    try {
-      await authService.logout()
-      toast.info('Anda telah keluar', { position: "top-center" })
-      navigate('/login')
-    } catch (error) {
-      console.error('Logout error:', error)
-      // Even if logout fails, clear tokens and redirect
-      clearTokens()
-      toast.info('Anda telah keluar', { position: "top-center" })
-      navigate('/login')
-    }
-  }
-
-  const handleLogout = async () => {
-    try {
-      await authService.logout()
-      toast.info('Anda telah keluar', { position: "top-center" })
-      navigate('/login')
-    } catch (error) {
-      console.error('Logout error:', error)
-      // Even if logout fails, clear tokens and redirect
-      clearTokens()
-      toast.info('Anda telah keluar', { position: "top-center" })
-      navigate('/login')
-    }
-  }
 
   // 🔹 Ambil user dari localStorage
   const user = JSON.parse(localStorage.getItem('user'))
@@ -84,15 +54,13 @@ export default function Sidebar({ view, setView, sidebarOpen, setSidebarOpen, co
     <>
       {/* Mobile Overlay */}
       <div
-        className={`fixed inset-0 bg-black/50 z-40 md:hidden transition-opacity duration-300 print:hidden${
+        className={`fixed inset-0 bg-black/50 z-40 md:hidden transition-opacity duration-300 print:hidden ${
           sidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
         onClick={() => setSidebarOpen(false)}
       />
-
-      {/* 📱 Mobile Sidebar */}
       <aside
-        className={`app-sidebar fixed top-0 left-0 z-50 h-full w-72 bg-white shadow-xl md:hidden transform transition-transform duration-300 ease-out${
+        className={`app-sidebar fixed top-0 left-0 z-50 h-full w-72 bg-white shadow-xl md:hidden transform transition-transform duration-300 ease-out ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
@@ -153,11 +121,11 @@ export default function Sidebar({ view, setView, sidebarOpen, setSidebarOpen, co
               <Settings className="h-5 w-5 text-slate-400" />
               <span>Pengaturan</span>
             </button>
-            <button 
+            <button
               onClick={handleLogout}
-              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-600 hover:bg-slate-50 transition-colors"
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-red-600 hover:bg-red-50 transition-colors"
             >
-              <LogOut className="h-5 w-5 text-slate-400" />
+              <LogOut className="h-5 w-5 text-red-400" />
               <span>Keluar</span>
             </button>
           </div>
@@ -243,12 +211,15 @@ export default function Sidebar({ view, setView, sidebarOpen, setSidebarOpen, co
               <Settings className="h-5 w-5 text-slate-400 flex-shrink-0" />
               {!collapsed && <span>Pengaturan</span>}
             </button>
-            <button 
+
+            <button
               onClick={handleLogout}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-600 hover:bg-slate-50 transition-colors ${collapsed ? 'justify-center' : ''}`} 
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-red-600 hover:bg-red-50 transition-colors ${
+                collapsed ? 'justify-center' : ''
+              }`}
               title={collapsed ? 'Keluar' : ''}
             >
-              <LogOut className="h-5 w-5 text-slate-400 flex-shrink-0" />
+              <LogOut className="h-5 w-5 text-red-400 flex-shrink-0" />
               {!collapsed && <span>Keluar</span>}
             </button>
           </div>
