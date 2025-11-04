@@ -548,7 +548,7 @@ export default function WaBlast(){
                         minute: '2-digit'
                       })}
                     </td>
-                    <td className="py-3 text-slate-600">{b.stats?.total_penerima || 0}</td>
+                    <td className="py-3 text-center text-slate-600">{b.stats?.total_penerima || 0}</td>
                     <td className="py-3">
                       {getStatusBadge(b.status)}
                     </td>
@@ -585,4 +585,3 @@ export default function WaBlast(){
     </div>
   )
 }
-

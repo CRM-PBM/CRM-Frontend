@@ -42,7 +42,7 @@ const RegisterPage = () => {
                 setUser(res.user)
             }
 
-            toast.success('🎉 Registrasi berhasil! Selamat datang di UMKM.CRM.', {
+            toast.success('🎉 Registrasi berhasil!\n Selamat datang di UMKM.CRM.', {
                 position: "top-center"
             })
             navigate('/login')

@@ -6,8 +6,9 @@ import {
 import Customers from './dashboard/Customers'
 import Products from './dashboard/Products'
 import Transactions from './dashboard/Transactions'
+import Categories from './dashboard/Categories'
 import WaBlast from './dashboard/WaBlast'
-import Invoices from './dashboard/Invoices'
+import Reports from './dashboard/Reports'
 import DashboardTopbar from '../components/DashboardTopbar'
 import Sidebar from '../components/Sidebar'
 import { pelangganService } from '../services/pelangganService'
@@ -195,7 +196,7 @@ export default function Dashboard(){
         <main className="flex-1 min-w-0 p-4 md:p-6 overflow-y-auto">
           <DashboardTopbar 
             onToggleSidebar={()=>setSidebarOpen(s => !s)} 
-            title={view==='overview'?'Ringkasan': view==='customers'?'Manajemen Pelanggan': view==='products'?'Manajemen Produk': view==='transactions'?'Pencatatan Transaksi': view==='wa'?'WA Blast': 'Nota & Laporan'} 
+            title={view==='overview'?'Ringkasan': view==='customers'?'Manajemen Pelanggan': view==='products'?'Manajemen Produk': view==='transactions'?'Pencatatan Transaksi': view==='wa'?'WA Blast': view==='categories'?'Manajemen Kategori & Jenis Produk' : 'Manajemen Laporan'} 
           />
 
             {view==='overview' && (
@@ -369,7 +370,7 @@ export default function Dashboard(){
                   <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
                     <div className="flex items-center gap-2 mb-4">
                       <AlertCircle className="h-5 w-5 text-red-600" />
-                      <h3 className="font-semibold text-slate-900">Stok Rendah (-10 Stok)</h3>
+                      <h3 className="font-semibold text-slate-900">Stok Rendah (&le;10 Stok)</h3>
                     </div>
                     <div className="text-xs text-slate-500 mb-3">Produk perlu restock</div>
                     {loading ? (
@@ -483,9 +484,10 @@ export default function Dashboard(){
 
             {view==='customers' && <Customers />}
             {view==='products' && <Products />}
+            {view === 'categories' && <Categories />}
             {view==='transactions' && <Transactions />}
             {view==='wa' && <WaBlast />}
-            {view==='invoices' && <Invoices />}
+            {view==='reports' && <Reports />}
         </main>
       </div>
     </div>

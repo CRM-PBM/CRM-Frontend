@@ -39,9 +39,8 @@ export const produkService = {
   },
 
   // Toggle product active status
-  toggleActive: async (id) => {
-    const response = await api.patch(`${BASE_URL}/${id}/toggle-active`)
-    return response.data
+  toggleActive: async (id) => { 
+        return api.patch(`/produk/${id}/toggle-active`); 
   },
 
   // Update stock

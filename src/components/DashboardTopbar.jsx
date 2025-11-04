@@ -76,12 +76,12 @@ export default function DashboardTopbar({ title = 'Dashboard', onToggleSidebar =
   }
 
   return (
-    <div className="mb-6 bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
+    <div className="mb-6 bg-white rounded-2xl border border-slate-200 p-4 shadow-sm print:hidden">
       <div className="flex items-center justify-between gap-4">
         {/* Left Section */}
         <div className="flex items-center gap-3 flex-1 min-w-0">
-          <button 
-            onClick={onToggleSidebar} 
+          <button
+            onClick={onToggleSidebar}
             className="md:hidden p-2 rounded-lg hover:bg-slate-100 transition-colors flex-shrink-0"
             aria-label="Buka menu"
           >
@@ -98,18 +98,18 @@ export default function DashboardTopbar({ title = 'Dashboard', onToggleSidebar =
 
         {/* Right Section */}
         <div className="flex items-center gap-2 flex-shrink-0">
-          {/* Search - Hidden on small screens */}
+          {/* Search */}
           <div className="hidden lg:flex items-center bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 w-64">
             <Search className="h-4 w-4 text-slate-400 mr-2 flex-shrink-0" />
-            <input 
+            <input
               type="text"
-              placeholder="Cari pelanggan, invoice..." 
-              className="text-sm outline-none bg-transparent w-full placeholder:text-slate-400" 
+              placeholder="Cari pelanggan, invoice..."
+              className="text-sm outline-none bg-transparent w-full placeholder:text-slate-400"
             />
           </div>
 
           {/* Notifications */}
-          <button 
+          <button
             className="p-2 rounded-lg hover:bg-slate-100 transition-colors relative"
             aria-label="Notifikasi"
           >
