@@ -19,6 +19,7 @@ import Dashboard from './pages/Dashboard'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 import InvoiceGeneratorPage from './pages/InvoiceGeneratorPage'
+import About from './components/About'
 
 // Component Helper untuk Route yang Terproteksi
 const ProtectedRoute = ({ children }) => {
@@ -33,6 +34,7 @@ const LandingPage = () => (
     <main>
       <Hero />
       <Partners />
+      <About />
       <VisionMission />
       <Features />
       <Testimonials />
