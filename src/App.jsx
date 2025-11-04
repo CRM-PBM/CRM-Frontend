@@ -13,6 +13,7 @@ import Features from './components/Features'
 import VisionMission from './components/VisionMission'
 import Testimonials from './components/Testimonials'
 import Footer from './components/Footer'
+import Pricing from './components/Pricing'
 
 // Import halaman dashboard dan auth
 import Dashboard from './pages/Dashboard'
@@ -34,6 +35,7 @@ const LandingPage = () => (
       <Hero />
       <Partners />
       <VisionMission />
+      <Pricing />
       <Features />
       <Testimonials />
     </main>
@@ -45,7 +47,7 @@ const LandingPage = () => (
 function App() {
   return (
     <Router>
-      <div className="bg-white font-sans">
+      <div className="font-sans bg-white">
         <Routes>
           {/* Landing Page */}
           <Route path="/" element={<LandingPage />} />
@@ -75,13 +77,13 @@ function App() {
 
           {/* 404 Route */}
           <Route path="*" element={
-            <div className="min-h-screen flex items-center justify-center bg-slate-50">
+            <div className="flex items-center justify-center min-h-screen bg-slate-50">
               <div className="text-center">
-                <h1 className="text-6xl font-bold text-slate-800 mb-4">404</h1>
-                <p className="text-xl text-slate-600 mb-8">Halaman tidak ditemukan</p>
+                <h1 className="mb-4 text-6xl font-bold text-slate-800">404</h1>
+                <p className="mb-8 text-xl text-slate-600">Halaman tidak ditemukan</p>
                 <a
                   href="/"
-                  className="bg-sky-500 text-white px-6 py-3 rounded-lg font-medium hover:bg-sky-600 transition-colors"
+                  className="px-6 py-3 font-medium text-white transition-colors rounded-lg bg-sky-500 hover:bg-sky-600"
                 >
                   Kembali ke Beranda
                 </a>
