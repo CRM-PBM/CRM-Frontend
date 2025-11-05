@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from 'react'
 import { Send, Users, Eye, MessageSquare, Wifi, WifiOff, CheckCircle, Clock, XCircle, Trash2, User, Phone, Mail, FileText, Copy, Key, Save, ChevronLeft, ChevronRight } from 'lucide-react'
 import * as BroadcastAPI from '../../services/broadcastApi'
 import * as WablastAPI from '../../services/wablastApi'
+import api from '../../services/authService'
 
 export default function WaBlast(){
   const [customers, setCustomers] = useState([])
@@ -18,7 +19,12 @@ export default function WaBlast(){
   const [form, setForm] = useState({
     judul_pesan: '',
     isi_pesan: '',
+    image_url: ''
   })
+  const [imageFile, setImageFile] = useState(null)
+  const [imagePreview, setImagePreview] = useState(null)
+  const [uploading, setUploading] = useState(false)
+  const [imageMode, setImageMode] = useState('url') // 'url' or 'upload'
   const textareaRef = useRef(null)
 
   // Template pesan yang sudah jadi
@@ -177,7 +183,8 @@ export default function WaBlast(){
   function applyTemplate(template) {
     setForm({
       judul_pesan: template.judul,
-      isi_pesan: template.isi
+      isi_pesan: template.isi,
+      image_url: ''
     })
     // Scroll ke form
     window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -227,6 +234,65 @@ export default function WaBlast(){
     }
   }
 
+  async function handleImageUpload(file) {
+    if (!file) return
+    
+    // Validate file type
+    const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
+    if (!validTypes.includes(file.type)) {
+      alert('Format gambar tidak didukung. Gunakan JPG, PNG, GIF, atau WEBP')
+      setImageFile(null)
+      setImagePreview(null)
+      return
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Ukuran gambar maksimal 5MB')
+      setImageFile(null)
+      setImagePreview(null)
+      return
+    }
+
+    setImageFile(file)
+    
+    // Create preview
+    const reader = new FileReader()
+    reader.onloadend = () => {
+      setImagePreview(reader.result)
+    }
+    reader.readAsDataURL(file)
+
+    // Upload to backend
+    setUploading(true)
+    try {
+      const formData = new FormData()
+      formData.append('image', file)
+
+      const response = await api.post('/broadcast/upload-image', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      })
+
+      if (response.data.success) {
+        setForm(prev => ({ ...prev, image_url: response.data.data.image_url }))
+        alert('Gambar berhasil diupload')
+      } else {
+        alert('Gagal upload gambar: ' + response.data.message)
+        setImageFile(null)
+        setImagePreview(null)
+      }
+    } catch (error) {
+      const errorMsg = error.response?.data?.message || error.message || 'Gagal upload gambar'
+      alert('Error: ' + errorMsg)
+      setImageFile(null)
+      setImagePreview(null)
+    } finally {
+      setUploading(false)
+    }
+  }
+
   async function createDraft() {
     if(!form.judul_pesan || !form.isi_pesan) {
       alert('Judul dan isi pesan harus diisi!')
@@ -243,11 +309,14 @@ export default function WaBlast(){
       await BroadcastAPI.createBroadcast({
         judul_pesan: form.judul_pesan,
         isi_pesan: form.isi_pesan,
+        image_url: form.image_url || undefined,
         pelanggan_ids: selectedCustomers
       })
 
       alert(`Draft broadcast "${form.judul_pesan}" berhasil dibuat!`)
-      setForm({ judul_pesan: '', isi_pesan: '' })
+      setForm({ judul_pesan: '', isi_pesan: '', image_url: '' })
+      setImageFile(null)
+      setImagePreview(null)
       await loadBroadcasts()
     } catch (error) {
       alert('Gagal membuat broadcast: ' + (error.message || 'Unknown error'))
@@ -612,6 +681,143 @@ export default function WaBlast(){
               </div>
             </div>
 
+            {/* Image Input */}
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">
+                Gambar (Opsional)
+              </label>
+              
+              {/* Mode Toggle */}
+              <div className="flex gap-2 mb-3 border border-slate-300 rounded-lg p-1 bg-slate-50">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setImageMode('url')
+                    setImageFile(null)
+                    setImagePreview(null)
+                  }}
+                  className={`flex-1 px-3 py-2 rounded text-xs font-medium transition-colors ${
+                    imageMode === 'url'
+                      ? 'bg-sky-600 text-white'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  📎 Gunakan URL
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setImageMode('upload')}
+                  className={`flex-1 px-3 py-2 rounded text-xs font-medium transition-colors ${
+                    imageMode === 'upload'
+                      ? 'bg-sky-600 text-white'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  📤 Upload File
+                </button>
+              </div>
+
+              {/* Mode: URL */}
+              {imageMode === 'url' && (
+                <div className="space-y-2">
+                  <input
+                    type="text"
+                    name="image_url"
+                    value={form.image_url}
+                    onChange={handleChange}
+                    placeholder="Paste URL gambar (contoh: https://...)"
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent text-sm"
+                  />
+                  <p className="text-xs text-slate-500">Format: HTTP/HTTPS URL yang valid</p>
+                  
+                  {/* URL Preview */}
+                  {form.image_url && (
+                    <div className="mt-2 p-2 bg-slate-50 rounded-lg border border-slate-200">
+                      <div className="flex items-center justify-between mb-2">
+                        <p className="text-xs font-medium text-slate-700">Preview:</p>
+                        <button
+                          type="button"
+                          onClick={() => setForm(prev => ({ ...prev, image_url: '' }))}
+                          className="text-xs text-red-600 hover:text-red-700"
+                        >
+                          Hapus
+                        </button>
+                      </div>
+                      <img 
+                        src={form.image_url}
+                        alt="Preview" 
+                        className="max-w-xs h-auto rounded-lg object-cover"
+                        onError={(e) => {
+                          e.target.style.display = 'none'
+                        }}
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Mode: Upload */}
+              {imageMode === 'upload' && (
+                <div className="space-y-2">
+                  <label className="flex items-center justify-center gap-2 border-2 border-dashed border-slate-300 rounded-lg px-4 py-4 cursor-pointer hover:border-sky-500 hover:bg-sky-50 transition-colors">
+                    <FileText className="h-5 w-5 text-slate-400" />
+                    <div>
+                      <span className="text-sm text-slate-600 font-medium">
+                        {imageFile ? imageFile.name : 'Klik untuk pilih gambar'}
+                      </span>
+                      <p className="text-xs text-slate-500">JPG, PNG, GIF, WebP • Max 5MB</p>
+                    </div>
+                    <input
+                      type="file"
+                      accept=".jpg,.jpeg,.png,.gif,.webp"
+                      onChange={(e) => handleImageUpload(e.target.files?.[0])}
+                      disabled={uploading}
+                      className="hidden"
+                    />
+                  </label>
+
+                  {/* Upload Status */}
+                  {uploading && (
+                    <div className="p-2 bg-blue-50 rounded-lg border border-blue-200">
+                      <p className="text-xs font-medium text-blue-700">⏳ Sedang mengunggah...</p>
+                    </div>
+                  )}
+
+                  {/* File Preview */}
+                  {imagePreview && (
+                    <div className="p-2 bg-slate-50 rounded-lg border border-slate-200">
+                      <div className="flex items-center justify-between mb-2">
+                        <p className="text-xs font-medium text-slate-700">Preview:</p>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setImageFile(null)
+                            setImagePreview(null)
+                            setForm(prev => ({ ...prev, image_url: '' }))
+                          }}
+                          className="text-xs text-red-600 hover:text-red-700"
+                        >
+                          Hapus
+                        </button>
+                      </div>
+                      <img 
+                        src={imagePreview} 
+                        alt="Preview" 
+                        className="max-w-xs h-auto rounded-lg object-cover"
+                      />
+                    </div>
+                  )}
+
+                  {/* Success Status */}
+                  {form.image_url && !uploading && imagePreview && (
+                    <div className="p-2 bg-green-50 rounded-lg border border-green-200">
+                      <p className="text-xs font-medium text-green-700">✓ Gambar berhasil diupload</p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
             <div className="flex flex-col sm:flex-row gap-2">
               <button
                 onClick={createDraft}
@@ -646,6 +852,7 @@ export default function WaBlast(){
                     await BroadcastAPI.createBroadcast({
                       judul_pesan: form.judul_pesan,
                       isi_pesan: form.isi_pesan,
+                      image_url: form.image_url || undefined,
                       pelanggan_ids: selectedCustomers
                     })
 
@@ -665,7 +872,9 @@ export default function WaBlast(){
                         `Gagal: ${results.failed || 0}`
                       )
                       
-                      setForm({ judul_pesan: '', isi_pesan: '' })
+                      setForm({ judul_pesan: '', isi_pesan: '', image_url: '' })
+                      setImageFile(null)
+                      setImagePreview(null)
                       await loadBroadcasts()
                       if (statistics) {
                         const statsRes = await BroadcastAPI.getBroadcastStatistics()
