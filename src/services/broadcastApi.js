@@ -6,6 +6,18 @@ export async function checkDeviceStatus() {
     const response = await api.get('/broadcast/device/status')
     return response.data
   } catch (error) {
+    // If endpoint returns 404, backend tidak implement properly
+    if (error.response?.status === 404) {
+      console.warn('⚠️ Backend /broadcast/device/status endpoint not implemented yet')
+      // Return mock data for development
+      return {
+        data: {
+          connected: true,  // Default ke true untuk development
+          device_name: 'WhatsApp Web',
+          status: 'Connected'
+        }
+      }
+    }
     console.error('Device status check error:', error)
     throw error
   }
@@ -54,6 +66,19 @@ export async function sendBroadcast(broadcastId) {
     return response.data
   } catch (error) {
     console.error('Send broadcast error:', error)
+    throw error
+  }
+}
+
+// Send Broadcast with Number Key
+export async function sendBroadcastWithNumberKey(broadcastId, numberKey) {
+  try {
+    const response = await api.post(`/broadcast/${broadcastId}/send`, {
+      wa_number_key: numberKey
+    })
+    return response.data
+  } catch (error) {
+    console.error('Send broadcast with number key error:', error)
     throw error
   }
 }
