@@ -14,6 +14,8 @@ import VisionMission from './components/VisionMission'
 import Testimonials from './components/Testimonials'
 import Footer from './components/Footer'
 import Pricing from './components/Pricing'
+import About from './components/About'
+import Contact from './components/Contact'
 
 // Import halaman dashboard dan auth
 import Dashboard from './pages/Dashboard'
@@ -34,10 +36,12 @@ const LandingPage = () => (
     <main>
       <Hero />
       <Partners />
+      <Features />
+      <About />
       <VisionMission />
       <Pricing />
-      <Features />
       <Testimonials />
+      <Contact />
     </main>
     <Footer />
   </>

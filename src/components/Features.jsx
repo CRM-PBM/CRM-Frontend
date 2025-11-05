@@ -4,19 +4,23 @@ import Reveal from './Reveal'
 
 export default function Features() {
   return (
-    <section id="features" className="bg-sky-50 py-12 md:py-20">
-      <div className="container mx-auto px-6">
-        <div className="text-center mb-12">
-          <h3 className="text-3xl md:text-4xl font-bold text-slate-800">Semua yang Anda Butuhkan</h3>
-          <p className="mt-4 text-gray-600">Fitur-fitur terbaik yang dirancang untuk kemudahan UMKM.</p>
-        </div>
-  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    <section id="features" className="py-20 bg-white">
+      <div className="container px-6 mx-auto">
+        <Reveal>
+          <div className="mb-12 text-center">
+            <h3 className="text-3xl font-bold md:text-4xl text-slate-800">Semua yang Anda Butuhkan</h3>
+            <p className="mt-4 text-gray-600">Fitur-fitur terbaik yang dirancang untuk kemudahan UMKM.</p>
+          </div>
+        </Reveal>
+        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
           {features.map((feature, index) => (
             <Reveal key={index}>
-              <div className="bg-white p-5 md:p-6 rounded-2xl border border-slate-100 card-shadow hover:shadow-xl transition-all transform hover:-translate-y-1">
-                <div className="flex items-center justify-center h-14 w-14 bg-sky-50 rounded-full mb-4">{feature.icon}</div>
-                <h4 className="text-lg font-semibold text-slate-900 mb-1">{feature.title}</h4>
-                <p className="text-sm text-slate-500">{feature.description}</p>
+              <div className="p-8 transition-all transform border bg-slate-50 rounded-xl border-slate-200 hover:shadow-xl hover:-translate-y-1">
+                <div className="flex items-center justify-center mb-4 rounded-full h-14 w-14 bg-sky-100 text-sky-500">
+                  {feature.icon}
+                </div>
+                <h4 className="mb-2 text-2xl font-semibold text-slate-800">{feature.title}</h4>
+                <p className="text-gray-600">{feature.description}</p>
               </div>
             </Reveal>
           ))}
