@@ -1,16 +1,17 @@
 import React, { useEffect, useState } from 'react'
 import { toast } from 'react-toastify'
 import { pelangganService } from '../../services/pelangganService'
-import { User, Phone, Mail, MapPin, Edit2, Trash2, Plus, Search, Loader, ChevronLeft, ChevronRight } from 'lucide-react'
+import { User, Phone, Mail, MapPin, Edit2, Trash2, Plus, Search, Loader, ChevronLeft, ChevronRight, Download, Upload, FileText } from 'lucide-react'
 
 export default function Customers(){
   const [list, setList] = useState([])
   const [loading, setLoading] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
-  const [totalPages, setTotalPages] = useState(1)
-  const [totalItems, setTotalItems] = useState(0)
-  const [itemsPerPage] = useState(10)
+  const [itemsPerPage] = useState(5)
+  const [importLoading, setImportLoading] = useState(false)
+  const [importFile, setImportFile] = useState(null)
+  const [importResult, setImportResult] = useState(null)
   const [form, setForm] = useState({
     nama: '',
     telepon: '',
@@ -24,21 +25,16 @@ export default function Customers(){
 
   useEffect(() => {
     loadPelanggan()
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPage])
+  }, [])
 
   async function loadPelanggan() {
     setLoading(true)
     try {
-      const response = await pelangganService.getAll({ 
-        page: currentPage, 
-        limit: itemsPerPage 
-      })
+      // Get all customers from backend (no pagination params)
+      const response = await pelangganService.getAll()
       
       if (response.success) {
         setList(response.data || [])
-        setTotalPages(response.totalPages || 1)
-        setTotalItems(response.total || 0)
       } else {
         toast.error(response.msg || 'Gagal memuat data pelanggan')
       }
@@ -149,6 +145,59 @@ export default function Customers(){
     })
   }
 
+  // Handle file selection
+  function handleFileSelect(e) {
+    const file = e.target.files?.[0]
+    if (file) {
+      setImportFile(file)
+      setImportResult(null) // Clear previous results
+    }
+  }
+
+  // Handle file import
+  async function handleImportFile() {
+    if (!importFile) {
+      toast.error('Pilih file terlebih dahulu')
+      return
+    }
+
+    const validExtensions = ['.csv', '.xls', '.xlsx']
+    const fileExtension = '.' + importFile.name.split('.').pop().toLowerCase()
+    
+    if (!validExtensions.includes(fileExtension)) {
+      toast.error('Format file tidak valid. Gunakan CSV, XLS, atau XLSX')
+      setImportFile(null)
+      return
+    }
+
+    try {
+      setImportLoading(true)
+      const response = await pelangganService.importFile(importFile)
+      
+      if (response.success) {
+        setImportResult(response.data || { successful: 0, failed: 0, errors: [] })
+        toast.success(`Import berhasil! ${response.data?.successful || 0} data ditambahkan`)
+        
+        // Reload data after delay
+        setTimeout(() => {
+          setCurrentPage(1)
+          loadPelanggan()
+          setImportFile(null)
+          
+          // Reset after showing results for 3 seconds
+          setTimeout(() => setImportResult(null), 3000)
+        }, 500)
+      } else {
+        toast.error(response.message || 'Gagal melakukan import')
+      }
+    } catch (error) {
+      console.error('Import error:', error)
+      toast.error(error.response?.data?.message || 'Gagal melakukan import data')
+    } finally {
+      setImportLoading(false)
+    }
+  }
+
   // Filter pelanggan based on search (client-side filtering)
   const filteredList = searchTerm
     ? list.filter(c => 
@@ -159,17 +208,103 @@ export default function Customers(){
       )
     : list
 
+  // Calculate pagination for filtered results
+  const totalFilteredItems = filteredList.length
+  const totalFilteredPages = Math.ceil(totalFilteredItems / itemsPerPage)
+  const startIdx = (currentPage - 1) * itemsPerPage
+  const endIdx = startIdx + itemsPerPage
+  const paginatedList = filteredList.slice(startIdx, endIdx)
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
-          <h3 className="text-2xl font-bold text-slate-900">Manajemen Pelanggan</h3>
-          <p className="text-sm text-slate-500 mt-1">Kelola data pelanggan UMKM Anda</p>
-        </div>
         <div className="flex items-center gap-2 text-sm text-slate-600">
           <User className="h-4 w-4" />
           <span className="font-medium">{list.length} Pelanggan</span>
+        </div>
+      </div>
+
+      {/* Import Section */}
+      <div className="bg-white rounded-xl border border-slate-200 p-4 md:p-6 shadow-sm">
+        <div className="flex items-center gap-2 mb-4">
+          <Upload className="h-5 w-5 text-green-600" />
+          <h4 className="font-semibold text-slate-900">Import Pelanggan dari File</h4>
+        </div>
+
+        <div className="space-y-4">
+          {/* File Upload Section */}
+          <div className="flex flex-col sm:flex-row gap-3">
+            {/* File Upload Input */}
+            <div className="flex-1">
+              <label className="flex items-center justify-center gap-2 border-2 border-dashed border-slate-300 rounded-lg px-4 py-2 cursor-pointer hover:border-sky-500 hover:bg-sky-50 transition-colors">
+                <FileText className="h-4 w-4 text-slate-400" />
+                <span className="text-sm md:text-base text-slate-600">
+                  {importFile ? importFile.name : 'Pilih file (CSV, XLS, XLSX)'}
+                </span>
+                <input
+                  type="file"
+                  accept=".csv,.xls,.xlsx"
+                  onChange={handleFileSelect}
+                  disabled={importLoading}
+                  className="hidden"
+                />
+              </label>
+            </div>
+
+            {/* Upload Button */}
+            <button
+              onClick={handleImportFile}
+              disabled={!importFile || importLoading}
+              className="flex items-center justify-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm md:text-base whitespace-nowrap"
+            >
+              {importLoading ? (
+                <>
+                  <Loader className="h-4 w-4 animate-spin" />
+                  Mengimpor...
+                </>
+              ) : (
+                <>
+                  <Upload className="h-4 w-4" />
+                  Upload & Import
+                </>
+              )}
+            </button>
+          </div>
+
+          {/* Import Result Display */}
+          {importResult && (
+            <div className={`p-4 rounded-lg border ${importResult.failed > 0 ? 'bg-yellow-50 border-yellow-200' : 'bg-green-50 border-green-200'}`}>
+              <p className={`font-semibold ${importResult.failed > 0 ? 'text-yellow-900' : 'text-green-900'}`}>
+                ✓ Import Selesai
+              </p>
+              <div className="grid grid-cols-2 gap-4 mt-2 text-sm">
+                <div>
+                  <p className="text-slate-600">Berhasil:</p>
+                  <p className="font-semibold text-green-700">{importResult.successful} data</p>
+                </div>
+                {importResult.failed > 0 && (
+                  <div>
+                    <p className="text-slate-600">Gagal:</p>
+                    <p className="font-semibold text-yellow-700">{importResult.failed} data</p>
+                  </div>
+                )}
+              </div>
+              {importResult.errors && importResult.errors.length > 0 && (
+                <div className="mt-3 pt-3 border-t border-yellow-200">
+                  <p className="text-xs font-semibold text-yellow-900 mb-2">Detail Error:</p>
+                  <div className="space-y-1 max-h-32 overflow-y-auto text-xs text-yellow-800">
+                    {importResult.errors.slice(0, 5).map((err, idx) => (
+                      <p key={idx}>• {err}</p>
+                    ))}
+                    {importResult.errors.length > 5 && (
+                      <p className="text-yellow-700 font-semibold">... dan {importResult.errors.length - 5} error lainnya</p>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
@@ -341,12 +476,12 @@ export default function Customers(){
             <div>
               <h4 className="font-semibold text-slate-900">Daftar Pelanggan</h4>
               <p className="text-sm text-slate-500 mt-1">
-                Menampilkan {list.length > 0 ? ((currentPage - 1) * itemsPerPage + 1) : 0} - {Math.min(currentPage * itemsPerPage, totalItems)} dari {totalItems} pelanggan
+                Menampilkan {paginatedList.length > 0 ? (startIdx + 1) : 0} - {Math.min(endIdx, totalFilteredItems)} dari {totalFilteredItems} pelanggan
               </p>
             </div>
-            {totalPages > 1 && (
+            {totalFilteredPages > 1 && (
               <div className="hidden md:flex items-center gap-1 text-sm text-slate-600">
-                Halaman {currentPage} dari {totalPages}
+                Halaman {currentPage} dari {totalFilteredPages}
               </div>
             )}
           </div>
@@ -369,7 +504,7 @@ export default function Customers(){
               </p>
             </div>
           ) : (
-            filteredList.map(pelanggan => (
+            paginatedList.map(pelanggan => (
               <div
                 key={pelanggan.pelanggan_id}
                 className="p-4 hover:bg-slate-50 transition-colors"
@@ -444,12 +579,17 @@ export default function Customers(){
         </div>
 
         {/* Pagination */}
-        {totalPages > 1 && (
+        {totalFilteredItems > 0 && (
           <div className="p-4 border-t border-slate-200 bg-slate-50">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+              {/* Display Info */}
+              <div className="text-sm text-slate-600">
+                Menampilkan {startIdx + 1} - {Math.min(endIdx, totalFilteredItems)} dari {totalFilteredItems} pelanggan
+              </div>
+
               {/* Mobile Page Info */}
               <div className="text-sm text-slate-600 sm:hidden">
-                Halaman {currentPage} dari {totalPages}
+                Halaman {currentPage} dari {totalFilteredPages}
               </div>
 
               {/* Pagination Controls */}
@@ -465,14 +605,15 @@ export default function Customers(){
                 </button>
 
                 {/* Page Numbers */}
+                {totalFilteredPages > 1 && (
                 <div className="flex items-center gap-1">
                   {(() => {
                     const pages = []
                     const showEllipsisStart = currentPage > 3
-                    const showEllipsisEnd = currentPage < totalPages - 2
+                    const showEllipsisEnd = currentPage < totalFilteredPages - 2
 
                     // First page
-                    if (totalPages > 0) {
+                    if (totalFilteredPages > 0) {
                       pages.push(
                         <button
                           key={1}
@@ -500,7 +641,7 @@ export default function Customers(){
 
                     // Middle pages
                     const start = Math.max(2, currentPage - 1)
-                    const end = Math.min(totalPages - 1, currentPage + 1)
+                    const end = Math.min(totalFilteredPages - 1, currentPage + 1)
                     
                     for (let i = start; i <= end; i++) {
                       pages.push(
@@ -529,19 +670,19 @@ export default function Customers(){
                     }
 
                     // Last page
-                    if (totalPages > 1) {
+                    if (totalFilteredPages > 1) {
                       pages.push(
                         <button
-                          key={totalPages}
-                          onClick={() => setCurrentPage(totalPages)}
+                          key={totalFilteredPages}
+                          onClick={() => setCurrentPage(totalFilteredPages)}
                           disabled={loading}
                           className={`w-10 h-10 text-sm font-medium rounded-lg transition-colors ${
-                            currentPage === totalPages
+                            currentPage === totalFilteredPages
                               ? 'bg-sky-600 text-white'
                               : 'text-slate-700 bg-white border border-slate-300 hover:bg-slate-50'
                           } disabled:opacity-50 disabled:cursor-not-allowed`}
                         >
-                          {totalPages}
+                          {totalFilteredPages}
                         </button>
                       )
                     }
@@ -549,11 +690,12 @@ export default function Customers(){
                     return pages
                   })()}
                 </div>
+                )}
 
                 {/* Next Button */}
                 <button
-                  onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                  disabled={currentPage === totalPages || loading}
+                  onClick={() => setCurrentPage(prev => Math.min(totalFilteredPages, prev + 1))}
+                  disabled={currentPage === totalFilteredPages || loading}
                   className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   <span className="hidden sm:inline">Selanjutnya</span>

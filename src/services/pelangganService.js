@@ -38,5 +38,25 @@ export const pelangganService = {
     const response = await api.get(`${PELANGGAN_URL}/statistik`)
     // kadang backend return { data: {...} } bukan langsung object
     return response.data.data || response.data
+  },
+
+  // Download template CSV
+  downloadTemplate: async () => {
+    const response = await api.get(`${PELANGGAN_URL}/template/download`, {
+      responseType: 'blob'
+    })
+    return response.data
+  },
+
+  // Import pelanggan dari file
+  importFile: async (file) => {
+    const formData = new FormData()
+    formData.append('file', file)
+    const response = await api.post(`${PELANGGAN_URL}/import`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    })
+    return response.data
   }
 }
