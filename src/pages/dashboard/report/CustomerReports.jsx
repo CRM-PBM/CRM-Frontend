@@ -111,8 +111,8 @@ export default function CustomerReports({ list, filterState, setFilter, handleEx
                             <Users className="h-5 w-5 text-sky-600" />
                         </div>
                         <div>
-                            <p className="text-sm text-slate-600">Total Pelanggan Aktif</p>
-                            <p className="text-2xl font-bold text-sky-600">{totalCustomers}</p>
+                            <p className="text-sm text-slate-600">Pelanggan Aktif</p>
+                            <p className="text-xl font-bold text-slate-800">{totalCustomers}</p>
                         </div>
                     </div>
                 </div>
@@ -124,7 +124,7 @@ export default function CustomerReports({ list, filterState, setFilter, handleEx
                         </div>
                         <div>
                             <p className="text-sm text-slate-600">Total Pembelian (LTV)</p>
-                            <p className="text-2xl font-bold text-green-600">{formatCurrency(totalPurchases)}</p>
+                            <p className="text-xl font-bold text-slate-800">{formatCurrency(totalPurchases)}</p>
                         </div>
                     </div>
                 </div>
@@ -136,7 +136,7 @@ export default function CustomerReports({ list, filterState, setFilter, handleEx
                         </div>
                         <div>
                             <p className="text-sm text-slate-600">Pelanggan Terbaik</p>
-                            <p className="text-xl font-bold text-purple-600 truncate" title={topSpender ? topSpender.nama : 'N/A'}>{topSpender ? topSpender.nama : 'N/A'}</p>
+                            <p className="text-xl font-bold text-slate-700 truncate" title={topSpender ? topSpender.nama : 'N/A'}>{topSpender ? topSpender.nama : 'N/A'}</p>
                         </div>
                     </div>
                 </div>
@@ -148,7 +148,7 @@ export default function CustomerReports({ list, filterState, setFilter, handleEx
                         </div>
                         <div>
                             <p className="text-sm text-slate-600">Jumlah Transaksi</p>
-                            <p className="text-2xl font-bold text-orange-600">{totalTransactions}</p>
+                            <p className="text-xl font-bold text-slate-800">{totalTransactions} Transaksi</p>
                         </div>
                     </div>
                 </div>
@@ -198,14 +198,14 @@ export default function CustomerReports({ list, filterState, setFilter, handleEx
                                 <tr key={c.pelanggan_id || index} className="border-b hover:bg-slate-50">
                                     <td className="px-2 py-1.5 font-medium text-slate-900 text-center text-xs whitespace-nowrap">{index + 1}</td>
                                     <td className="px-2 py-1.5 text-xs text-slate-800 font-medium whitespace-nowrap">{c.nama}</td>
-                                    <td className="px-2 py-1.5 text-xs text-slate-600 text-center whitespace-nowrap">{c.Kode_pelanggan || '-'}</td>
+                                    <td className="px-2 py-1.5 text-xs text-slate-800 text-center font-medium whitespace-nowrap">{c.Kode_pelanggan || '-'}</td>
                                     <td className="px-2 py-1.5 text-xs text-slate-600 text-center whitespace-nowrap">
                                         <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${c.gender == 'Pria' ? 'bg-blue-100 text-blue-700' : 'bg-pink-100 text-pink-700'}`}>
                                             {c.gender}
                                         </span>
                                     </td>
                                     <td className="px-2 py-1.5 text-xs text-slate-600 text-center whitespace-nowrap">{c.telepon || '-'}</td>
-                                    <td className="px-2 py-1.5 text-xs text-slate-600 truncate max-w-xs">{c.email || '-'}</td>
+                                    <td className="px-2 py-1.5 text-xs text-sky-700 truncate max-w-xs">{c.email || '-'}</td>
                                     <td className="px-2 py-1.5 text-xs text-slate-600 truncate max-w-xs">{c.alamat || '-'}</td>
                                     <td className="px-2 py-1.5 text-xs text-slate-800 font-semibold text-center whitespace-nowrap">
                                         <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${

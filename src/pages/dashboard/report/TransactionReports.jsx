@@ -102,7 +102,7 @@ export default function TransactionReports({ summary, list, filterState, setFilt
                         </div>
                         <div>
                             <p className="text-sm text-slate-600">Total Pendapatan</p>
-                            <p className="text-2xl font-bold text-slate-900">{formatCurrency(safeSummary.total_pendapatan || 0)}</p>
+                            <p className="text-xl font-bold text-slate-900">{formatCurrency(safeSummary.total_pendapatan || 0)}</p>
                         </div>
                     </div>
                 </div>
@@ -114,7 +114,7 @@ export default function TransactionReports({ summary, list, filterState, setFilt
                         </div>
                         <div>
                             <p className="text-sm text-slate-600">Jumlah Transaksi</p>
-                            <p className="text-2xl font-bold text-slate-900">{safeSummary.jumlah_transaksi || 0}</p>
+                            <p className="text-xl font-bold text-slate-900">{safeSummary.jumlah_transaksi || 0}</p>
                         </div>
                     </div>
                 </div>
@@ -126,7 +126,7 @@ export default function TransactionReports({ summary, list, filterState, setFilt
                         </div>
                         <div>
                             <p className="text-sm text-slate-600">Rata - rata Transaksi</p>
-                            <p className="text-2xl font-bold text-slate-900">{formatCurrency(safeSummary.rata_rata || 0)}</p>
+                            <p className="text-xl font-bold text-slate-900">{formatCurrency(safeSummary.rata_rata || 0)}</p>
                         </div>
                     </div>
                 </div>
@@ -138,7 +138,7 @@ export default function TransactionReports({ summary, list, filterState, setFilt
                         </div>
                         <div>
                             <p className="text-sm text-slate-600">Profit Kotor</p>
-                            <p className="text-2xl font-bold text-slate-900">{formatCurrency(safeSummary.profit_kotor || 0)}</p>
+                            <p className="text-xl font-bold text-slate-900">{formatCurrency(safeSummary.profit_kotor || 0)}</p>
                         </div>
                     </div>
                 </div>
@@ -179,7 +179,7 @@ export default function TransactionReports({ summary, list, filterState, setFilt
                                     <tr key={t.transaksi_id || index} className="bg-white border-b hover:bg-slate-50">
                                         <td className="px-2 py-1.5 font-medium text-slate-900 text-center">{index + 1}</td>
                                         <td className="px-2 py-1.5 text-xs">{formatDateTime(t.tanggal_transaksi)}</td>
-                                        <td className="px-2 py-1.5 text-sky-600">{t.kode_transaksi || `ID#${t.transaksi_id}`}</td>
+                                        <td className="text-xs px-2 py-1.5 text-slate-800">{t.kode_transaksi || `ID#${t.transaksi_id}`}</td>
                                         <td className="px-2 py-1.5 text-xs">{t.Pelanggan?.nama || 'Umum'}</td>
                                         <td className="px-2 py-1.5 text-xs">
                                             <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${

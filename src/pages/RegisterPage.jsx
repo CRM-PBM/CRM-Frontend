@@ -33,7 +33,7 @@ const RegisterPage = () => {
             localStorage.setItem('token', res.token)
             localStorage.setItem('user', JSON.stringify(res.user))
 
-            toast.success('🎉 Registrasi berhasil!\n Selamat datang di UMKM.CRM.', {
+            toast.success('🎉 Registrasi berhasil!\nHarap tunggu verifikasi akun anda 1x24 jam', {
                 position: "top-center"
             })
             navigate('/login')
@@ -51,7 +51,7 @@ const RegisterPage = () => {
                 <div className="text-center mb-6">
                     <FaUserPlus className="text-sky-500 mx-auto text-4xl mb-3" />
                     <h2 className="text-3xl font-bold text-slate-800">
-                        Daftar Akun UMKM.CRM
+                        Daftar Akun UMKM-CRM
                     </h2>
                     <p className="text-gray-600 mt-1">
                         Daftarkan UMKM dan pemilik akun pertama Anda.

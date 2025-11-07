@@ -26,15 +26,17 @@ const LoginPage = () => {
             const res = await authService.login(formData)
             console.log('Login response:', res)
 
-            // Simpan token & data user
-            if (res.token) {
+            // Cek jika login berhasil dan respons memiliki token
+            if (res.token && res.user) {
+                
                 localStorage.setItem('token', res.token)
-                console.log('Token saved to localStorage')
-            } else {
-                console.error('No token in response')
-            }
+                console.log('Token saved to localStorage as authToken')
 
-            if (res.user) {
+                const userRole = res.user.role || 'umkm'; 
+                localStorage.setItem('userRole', userRole);
+                console.log('User Role saved:', userRole);
+
+                // Simpan user dan umkmData
                 const namaUmkm = res.user.Umkm?.nama_umkm || res.user.nama_umkm || 'UMKM Saya';
                 const namaPemilik = res.user.Umkm?.nama_pemilik || res.user.nama_pemilik || 'Pemilik Usaha';
 
@@ -43,12 +45,28 @@ const LoginPage = () => {
                     nama_umkm: namaUmkm,
                     nama_pemilik: namaPemilik
                 }));
-            }
 
-            navigate('/dashboard')
+                // 🚀 SOLUSI 3: Logika Redirect Berdasarkan Role
+                // Arahkan ke rute yang benar setelah login sukses
+                if (userRole === 'adm' || userRole === 'admin') {
+                    // Jika role adalah admin, arahkan ke halaman admin
+                    navigate('/admin', { replace: true })
+                } else {
+                    // Jika role adalah umkm, arahkan ke dashboard biasa
+                    navigate('/dashboard', { replace: true })
+                }
+                
+                toast.success('Login berhasil!');
+
+            } else {
+                // Kasus jika respons sukses tapi tidak ada token/user (jarang terjadi jika API benar)
+                 throw new Error('Respons login tidak lengkap.'); 
+            }
+            
         } catch (err) {
             console.error('Login error:', err)
-            const errMsg = err.response?.data?.msg || 'Login gagal. Coba periksa kembali email dan password Anda.'
+            // Menggunakan err.message jika error dari 'throw new Error' di atas
+            const errMsg = err.response?.data?.msg || err.message || 'Login gagal. Coba periksa kembali email dan password Anda.'
             toast.error(errMsg)
         } finally {
             setLoading(false)
