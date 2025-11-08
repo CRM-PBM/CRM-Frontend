@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import adminService from '../../services/adminService'; 
-// Ganti Line menjadi Bar
 import { Bar } from 'react-chartjs-2'; 
 import { 
     Chart as ChartJS, 
     CategoryScale, 
     LinearScale, 
-    // Ganti PointElement, LineElement menjadi BarElement
     BarElement, 
     Title, 
     Tooltip, 
@@ -19,7 +17,7 @@ import { Loader } from 'lucide-react'
 ChartJS.register(
     CategoryScale,
     LinearScale,
-    BarElement, // <-- BarElement Baru
+    BarElement, 
     Title,
     Tooltip,
     Legend
@@ -35,7 +33,7 @@ const AnalyticCard = ({ title, value, color = 'gray', icon: Icon }) => {
     };
     
     const formattedValue = title.includes('Volume Transaksi') 
-        ? `Rp ${value.toLocaleString('id-ID')}` 
+        ?  `${value.toLocaleString('id-ID')} x` 
         : value.toLocaleString('id-ID');
 
     return (
@@ -149,7 +147,6 @@ const AdminDashboardPage = () => {
         },
     };
 
-    // Tampilan Loading dan Error (TIDAK BERUBAH)
     if (isLoading) return <div className="p-8 text-center">
                     <Loader className="h-8 w-8 animate-spin text-sky-600 mx-auto mb-2" />
                     <p className="text-sm text-slate-500">Memuat data admin...</p>
@@ -160,7 +157,7 @@ const AdminDashboardPage = () => {
     // Rendering Halaman (Diperbarui menggunakan komponen <Bar />)
     return (
         <div className="p-6 bg-slate-50 min-h-full">
-            <h1 className="text-3xl font-bold text-slate-800 mb-2">Dashboard Analitik Global</h1>
+            <h1 className="text-3xl font-bold text-slate-800 mb-2">Dashboard Admin</h1>
             <p className="text-gray-500 mb-8">Ringkasan performa platform CRM-UMKM secara keseluruhan.</p>
             
             {/* Bagian A: Card Analitik Global (TIDAK BERUBAH) */}
