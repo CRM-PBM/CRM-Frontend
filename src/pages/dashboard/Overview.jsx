@@ -7,6 +7,7 @@ import { pelangganService } from '../../services/pelangganService';
 import { produkService } from '../../services/produkService';
 import { transaksiService } from '../../services/transaksiService';
 import { Link } from 'react-router-dom';
+import CustomerGrowthChart from '../../components/charts/CustomerGrowthChart';
 
 // Data Dummy Awal
 const initialDashboardData = {
@@ -227,6 +228,14 @@ export default function Overview() {
                         {dashboardData.produk.aktif} dari {dashboardData.produk.total} produk aktif
                     </div>
                 </div>
+            </div>
+
+            <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm mb-6">
+                <div className="flex items-center gap-2 mb-4">
+                    <BarChart2 className="h-5 w-5 text-sky-600" />
+                    <h3 className="font-semibold text-slate-900">Grafik Pertumbuhan</h3>
+                </div>
+                <CustomerGrowthChart />
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

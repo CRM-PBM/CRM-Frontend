@@ -77,7 +77,6 @@ export default function Dashboard() {
                         title={currentTitle}
                     />
 
-                    {/* Ini adalah tempat di mana komponen anak (Overview, Customers, AdminDashboard, dll.) akan dirender */}
                     <Outlet /> 
 
                 </main>

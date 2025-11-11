@@ -18,7 +18,7 @@ function CustomerFilterSort({ filterState, setFilter }) {
         { value: 'total_pembelian', label: 'Total Pembelian (LTV)' },
         { value: 'jumlah_transaksi', label: 'Jumlah Transaksi' },
         { value: 'nama', label: 'Nama Pelanggan' },
-        { value: 'created_at', label: 'Tgl Registrasi' },
+        { value: 'created_at', label: 'Tanggal Daftar' },
     ];
 
     return (

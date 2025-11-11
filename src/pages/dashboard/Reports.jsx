@@ -1,7 +1,5 @@
 import React from 'react';
 import { Loader, ShoppingCart, Users, FileText } from 'lucide-react';
-
-// Import Logic dan Komponen dari folder report/
 import useReportLogic from './report/hooks/useReportLogic';
 import TabButton from './report/Components/TabButton';
 import FilterCard from './report/Components/FilterCard';
@@ -19,7 +17,6 @@ export default function Reports() {
     const { setActiveTab, handleExport, setFilter } = handlers;
     const { isDataReady, dynamicUmkmName, periodDisplay, rangeDateDisplay, filter } = computed;
 
-    // Ambil list yang sudah difilter/disortir
     const processedTransactionList = list.transaction;
     const processedCustomerList = list.customer;
 
