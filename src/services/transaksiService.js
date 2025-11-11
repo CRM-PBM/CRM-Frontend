@@ -65,5 +65,11 @@ export const transaksiService = {
             console.error('Error fetching transaksi statistics:', error)
             throw error
         }
-    }
+    },
+
+    // Get transaction growth data for charts
+    getTransaksiGrowthData: async (period = 'day') => { 
+        const response = await api.get(`/transaksi/growth?period=${period}`)
+        return response.data.data || response.data
+    },
 }

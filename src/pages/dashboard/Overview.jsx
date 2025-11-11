@@ -8,6 +8,7 @@ import { produkService } from '../../services/produkService';
 import { transaksiService } from '../../services/transaksiService';
 import { Link } from 'react-router-dom';
 import CustomerGrowthChart from '../../components/charts/CustomerGrowthChart';
+import TransactionGrowthChart from '../../components/charts/TransactionGrowthChart';
 
 // Data Dummy Awal
 const initialDashboardData = {
@@ -235,7 +236,14 @@ export default function Overview() {
                     <BarChart2 className="h-5 w-5 text-sky-600" />
                     <h3 className="font-semibold text-slate-900">Grafik Pertumbuhan</h3>
                 </div>
-                <CustomerGrowthChart />
+                <div className="flex flex-col lg:flex-row gap-6">
+                    <div className="w-full lg:w-1/2">
+                        <CustomerGrowthChart />
+                    </div>
+                    <div className="w-full lg:w-1/2">
+                        <TransactionGrowthChart />
+                    </div>
+                </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

@@ -1,24 +1,28 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Bar } from 'react-chartjs-2'; 
 import {
-  Chart as ChartJS, 
-  CategoryScale, 
-  LinearScale, 
-  BarElement, 
-  Title, 
-  Tooltip, 
-  Legend,
-} from 'chart.js';
-import { pelangganService } from '../../services/pelangganService'; 
-import { Calendar, Loader } from 'lucide-react'; 
-
-ChartJS.register(
+  Chart as ChartJS,
   CategoryScale,
   LinearScale,
-  BarElement, 
+  PointElement,
+  LineElement,
   Title,
   Tooltip,
-  Legend
+  Filler,
+  Legend,
+} from 'chart.js';
+import { Line } from 'react-chartjs-2'; // Import Line Chart
+import { transaksiService } from '../../services/transaksiService'; 
+import { Calendar, Loader } from 'lucide-react'; 
+
+ChartJS.register (
+    CategoryScale, 
+    LinearScale, 
+    PointElement,  
+    LineElement,  
+    Title, 
+    Tooltip, 
+    Filler,
+    Legend
 );
 
 const PERIOD_OPTIONS = [ 
@@ -29,10 +33,11 @@ const PERIOD_OPTIONS = [
 ];
 
 const formatPeriodLabel = (period, periodType) => { 
-    if (typeof period !== 'string') return period; 
+    if (typeof period !== 'string') return period || ''; 
     
     if (periodType === 'day') {
         const date = new Date(period);
+        if (isNaN(date)) return period; 
         return `${date.getDate()} ${date.toLocaleString('id-ID', { month: 'short' })}`;
     }
     if (periodType === 'month') {
@@ -40,13 +45,15 @@ const formatPeriodLabel = (period, periodType) => {
     }
     if (periodType === 'year') return period;
     if (periodType === 'week') {
-        const weekNumber = period.slice(period.indexOf('-') + 1); 
+        const hyphenIndex = period.indexOf('-');
+        if (hyphenIndex === -1) return period;
+        const weekNumber = period.slice(hyphenIndex + 1); 
         return `Minggu ${weekNumber}`; 
     }
     return period;
 };
 
-export default function PelangganGrowthChart() {
+export default function TransactionGrowthChart() {
     const [loading, setLoading] = useState(true);
     const [chartData, setChartData] = useState([]);
     const [error, setError] = useState(null);
@@ -56,12 +63,11 @@ export default function PelangganGrowthChart() {
         const fetchData = async () => {
             try {
                 setLoading(true);
-                const response = await pelangganService.getPelangganGrowthData(period); 
+                const response = await transaksiService.getTransaksiGrowthData(period); 
                 setChartData(response);
                 setError(null);
             } catch (err) {
-                console.error("Gagal mengambil data pelanggan growth:", err);
-                // Menampilkan pesan error 
+                console.error("Gagal mengambil data transaksi growth:", err);
                 setError("Gagal memuat data grafik. Silakan coba lagi.");
             } finally {
                 setLoading(false);
@@ -75,18 +81,22 @@ export default function PelangganGrowthChart() {
         labels: chartData.map(d => formatPeriodLabel(d.period, period)), 
         datasets: [
             {
-                label: 'Total Pelanggan Baru', 
-                data: chartData.map(d => d.new_customers),
-                backgroundColor: 'rgba(75, 192, 192, 0.8)', // Biru muda
-                borderColor: 'rgb(75, 192, 192)',
-                borderWidth: 1
+                label: 'Transaksi Baru', 
+                data: chartData.map(d => d.new_transactions), 
+                borderColor: 'rgb(255, 159, 64)', // Orange Line
+                backgroundColor: 'rgba(255, 159, 64, 0.5)', 
+                fill: false,
+                tension: 0.4,
+                pointRadius: 5
             },
             {
-                label: 'Total Pelanggan Aktif', 
-                data: chartData.map(d => d.cumulative_customers), 
-                backgroundColor: 'rgba(4, 120, 87, 0.8)', // Hijau Tua (emerald-700)
-                borderColor: 'rgb(4, 120, 87)',
-                borderWidth: 1
+                label: 'Total Transaksi', 
+                data: chartData.map(d => d.cumulative_transactions), 
+                borderColor: 'rgb(54, 162, 235)', // Blue Line
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                fill: true, // Area di bawah garis diisi (optional)
+                tension: 0.4,
+                pointRadius: 5
             },
         ],
     }), [chartData, period]);
@@ -98,18 +108,23 @@ export default function PelangganGrowthChart() {
             legend: { position: 'top' },
             title: { 
                 display: true, 
-                text: `Pertumbuhan Pelanggan (${PERIOD_OPTIONS.find(o => o.value === period)?.label || period})` 
+                text: `Pertumbuhan Transaksi (${PERIOD_OPTIONS.find(o => o.value === period)?.label || period})` 
             },
         },
         scales: {
             x: {
-                stacked: false,
                 title: { display: true, text: PERIOD_OPTIONS.find(o => o.value === period)?.label || 'Periode' },
             },
             y: {
-                stacked: false,
                 beginAtZero: true,
-                title: { display: true, text: 'Jumlah Pelanggan' },
+                title: { display: true, text: 'Jumlah Transaksi' },
+                ticks: {
+                    callback: function(value) {
+                        if (value % 1 === 0) {
+                            return value;
+                        }
+                    }
+                }
             }
         },
     };
@@ -128,7 +143,7 @@ export default function PelangganGrowthChart() {
     return (
         <div className="bg-white p-6 rounded-xl shadow-md border border-slate-100 mb-8">
             <div className='flex justify-between items-center mb-4'>
-                <h5 className="text-xl font-semibold text-slate-700">Grafik Pertumbuhan Pelanggan</h5>
+                <h5 className="text-xl font-semibold text-slate-700">Grafik Pertumbuhan Transaksi</h5>
                 <div className="flex items-center space-x-2">
                     <Calendar className="text-gray-500 h-5 w-5" />
                     <select 
@@ -145,13 +160,13 @@ export default function PelangganGrowthChart() {
                 </div>
             </div>
             
-            {/* Div ini memiliki tinggi tetap 350px */}
             <div style={{ height: '350px' }}>
                 {chartData.length > 0 ? (
-                    <Bar options={options} data={data} />
+                    // DIGANTI DARI <Bar> MENJADI <Line>
+                    <Line options={options} data={data} />
                 ) : (
                     <div className="text-center py-20 text-gray-500">
-                        Tidak ada data pertumbuhan pelanggan pada periode ini.
+                        Tidak ada data pertumbuhan transaksi pada periode ini.
                     </div>
                 )}
             </div>
