@@ -1,5 +1,6 @@
+// 1. Fungsi formatCurrency 
 export const formatCurrency = (amount) => {
-    // Memastikan input adalah angka atau 0 jika null/undefined
+    // Memastikan input adalah angka, jika tidak valid akan menjadi 0
     const numericAmount = parseFloat(amount) || 0; 
 
     return new Intl.NumberFormat('id-ID', {
@@ -9,6 +10,20 @@ export const formatCurrency = (amount) => {
     }).format(numericAmount);
 };
 
+// 2. Fungsi formatNumber (DITAMBAHKAN dari saran sebelumnya untuk K/M)
+export const formatNumber = (value) => {
+    const numValue = Number(value);
+    if (isNaN(numValue)) return '0';
+    
+    // Jika angka sangat besar, tampilkan dalam format K (Ribu) atau M (Juta)
+    if (numValue >= 1000000) return `${(numValue / 1000000).toFixed(1)}Jt`;
+    if (numValue >= 1000) return `${(numValue / 1000).toFixed(1)}Rb`;
+    
+    
+    return new Intl.NumberFormat('id-ID').format(numValue);
+};
+
+// 3. Fungsi formatDate 
 export const formatDate = (dateString) => {
     if (!dateString) return '-';
     const date = new Date(dateString);
@@ -18,18 +33,19 @@ export const formatDate = (dateString) => {
     return date.toLocaleDateString('id-ID', options);
 };
 
+// 4. Fungsi formatDateTime 
 export const formatDateTime = (dateString) => {
     if (!dateString) return '-';
     const date = new Date(dateString);
     if (isNaN(date.getTime())) return '-';
 
-    // Gabungkan tanggal dan waktu untuk tampilan yang lebih informatif
     const datePart = date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
     const timePart = date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
 
     return `${datePart}, ${timePart}`; 
 };
 
+// 5. Fungsi formatMonthPeriod 
 export const formatMonthPeriod = (startDateString, endDateString) => {
     if (!startDateString || !endDateString) return 'Periode Tidak Valid';
 
@@ -41,23 +57,21 @@ export const formatMonthPeriod = (startDateString, endDateString) => {
     const startMonth = start.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
     const endMonth = end.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
 
-    // Jika bulan dan tahun sama
     if (startMonth === endMonth) {
         return `Periode Bulan ${startMonth}`;
     } 
-    // Jika rentang lebih dari satu bulan
     else {
         return `Periode ${startMonth} s/d ${endMonth}`;
     }
 };
 
+// 6. Fungsi formatRangeDate 
 export const formatRangeDate = (startDateString, endDateString) => {
     if (!startDateString || !endDateString) return '-';
 
     const start = new Date(startDateString);
     const end = new Date(endDateString);
     
-    // Format tanggal: 01 Oktober - 31 Oktober 2025
     const startPart = start.toLocaleDateString('id-ID', { day: 'numeric', month: 'long' });
     const endPart = end.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
 
