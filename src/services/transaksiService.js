@@ -57,7 +57,7 @@ export const transaksiService = {
     },
 
     // Get transaction statistics
-    getStatistics: async () => {
+    getStatistik: async () => {
         try {
             const response = await api.get('/transaksi/statistik')
             return response.data

@@ -1,21 +1,20 @@
 import React from 'react';
 import { TrendingUp } from 'lucide-react';
-import { formatCurrency } from '../../utils/formatters';
+import { formatCurrency, formatNumber } from '../../utils/formatters';
 
 export default function Top5ProductsCard({ data, loading }) {
     return (
         <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
             <div className="flex items-center gap-2 mb-4">
                 <TrendingUp className="h-5 w-5 text-sky-600" />
-                <h3 className="font-semibold text-slate-900">Top 5 Produk</h3>
+                <h3 className="font-semibold text-slate-900">Top Produk Terlaris</h3>
             </div>
-            {/* LABEL SAAT INI (AKAN KITA GANTI NANTI) */}
-            <div className="text-xs text-slate-500 mb-3">Berdasarkan banyaknya produk yang dibeli</div> 
+            <div className="text-xs text-slate-500 mb-3">Berdasarkan paling laris bulan ini.</div> 
             
             {loading ? (
                 <div className="text-center py-4 text-slate-400">Loading...</div>
             ) : data.length === 0 ? (
-                <div className="text-center py-4 text-slate-400">Belum ada data</div>
+                <div className="text-center py-4 text-slate-400">Belum ada transaksi bulan ini</div>
             ) : (
                 <div className="space-y-3">
                     {data.map((produk, index) => (
@@ -28,12 +27,11 @@ export default function Top5ProductsCard({ data, loading }) {
                                     {produk.nama_produk}
                                 </div>
                                 <div className="text-xs text-slate-500">
-                                    Stok: {produk.stok} × {formatCurrency(produk.harga)}
+                                    {formatNumber(produk.total_terjual)} pcs x {formatCurrency(produk.harga_satuan)} = {formatCurrency(produk.total_pendapatan)} 
                                 </div>
                             </div>
-                            {/* Nilai berdasarkan perhitungan inventori (nilai) */}
-                            <div className="text-sm font-semibold text-slate-900">
-                                {formatCurrency(produk.nilai)}
+                            <div className="text-sm font-bold text-green-600">
+                                {formatNumber(produk.total_terjual)} pcs
                             </div>
                         </div>
                     ))}
