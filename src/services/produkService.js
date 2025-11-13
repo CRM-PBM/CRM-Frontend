@@ -5,11 +5,12 @@ const BASE_URL = '/produk'
 export const produkService = {
   // Get all products with pagination and filters
   getAll: async (params = {}) => {
-    const queryParams = new URLSearchParams({
-      page: params.page || 1,
-      limit: params.limit || 10,
-      ...params
-    })
+    const queryParams = new URLSearchParams()
+    if (params.limit) queryParams.append('limit', params.limit)
+    if (params.search) queryParams.append('search', params.search)
+    if (params.page) queryParams.append('page', params.page)
+    if (params.aktif) queryParams.append('aktif', params.aktif)
+
     const response = await api.get(`${BASE_URL}?${queryParams}`)
     return response.data
   },

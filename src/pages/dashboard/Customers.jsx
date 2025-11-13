@@ -50,8 +50,8 @@ export default function Customers(){
           setTotalPages(response.pagination.totalPages || 1)
           setTotalItems(response.pagination.total || 0)
         } else {
-           setTotalPages(1)
-           setTotalItems(response.data.length || 0)
+          setTotalPages(1)
+          setTotalItems(response.data.length || 0)
         }
       }
     } catch (error) {
@@ -329,9 +329,9 @@ export default function Customers(){
         </div>
       </div>
 
-      {/* Customer List (TABLE VIEW) */}
+      {/* Customer List Table */}
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-x-auto">
-        <div className="p-4 border-b border-slate-200 bg-slate-50 lg:min-w-full">
+        <div className="p-4 border-b border-slate-200 bg-slate-50 min-w-[1048px]">
           <div className="flex items-center justify-between">
             <div>
               <h4 className="font-semibold text-slate-900">Daftar Pelanggan</h4>

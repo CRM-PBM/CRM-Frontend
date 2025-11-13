@@ -30,11 +30,21 @@ export default function Products(){
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage])
 
+  useEffect(() => {
+      if (currentPage !== 1) {
+        setCurrentPage(1)
+      } else {
+        loadProduk()
+        loadJenisProduk()
+        loadStatistics()
+      }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [searchTerm])
+
   async function loadJenisProduk() {
     try {
       const response = await produkService.getJenisProduk() 
       if (response.success) {
-        // Asumsi response adalah { success: true, data: [ {jenis1}, {jenis2} ] }
         setJenisProdukList(response.data.data || response.data || []) 
       }
     } catch (error) {
@@ -48,12 +58,16 @@ export default function Products(){
     try {
       const response = await produkService.getAll({ 
         page: currentPage, 
-        limit: itemsPerPage 
+        limit: itemsPerPage,
+        search: searchTerm
       })
       if (response.success) {
         setList(response.data || [])
-        setTotalPages(response.totalPages || 1)
-        setTotalItems(response.total || 0)
+
+        const pagination = response.pagination || {};
+
+        setTotalPages(pagination.totalPages || 1) 
+        setTotalItems(pagination.total || 0)
       }
     } catch (error) {
       console.error('Error loading produk:', error)
@@ -109,6 +123,7 @@ export default function Products(){
         nama_produk: '',
         harga: '',
         stok: '0',
+        jenis_produk_id: '',
         aktif: true
       })
       
@@ -148,31 +163,29 @@ export default function Products(){
     }
   }
 
-  // CRM-frontend/src/pages/Products.jsx (handleToggleActive)
+  async function handleToggleActive(id, currentStatus) {
+      setList(list.map(p => 
+          p.produk_id === id ? { ...p, aktif: !currentStatus } : p
+      ));
+      toast.success(`Produk ${currentStatus ? 'dinonaktifkan' : 'diaktifkan'}`);
 
-async function handleToggleActive(id, currentStatus) {
-    setList(list.map(p => 
-        p.produk_id === id ? { ...p, aktif: !currentStatus } : p
-    ));
-    toast.success(`Produk ${currentStatus ? 'dinonaktifkan' : 'diaktifkan'}`);
+      setLoading(true);
+      try {
+          await produkService.toggleActive(id); 
+          loadProduk(); 
+          loadStatistics(); 
 
-    setLoading(true);
-    try {
-        await produkService.toggleActive(id); 
-        loadProduk(); 
-        loadStatistics(); 
+      } catch (error) {
+          setList(list.map(p => 
+              p.produk_id === id ? { ...p, aktif: currentStatus } : p
+          ));
+          console.error('Error toggling active:', error);
+          toast.error(error.response?.data?.message || 'Gagal mengubah status produk');
 
-    } catch (error) {
-        setList(list.map(p => 
-            p.produk_id === id ? { ...p, aktif: currentStatus } : p
-        ));
-        console.error('Error toggling active:', error);
-        toast.error(error.response?.data?.message || 'Gagal mengubah status produk');
-
-    } finally {
-        setLoading(false);
-    }
-}
+      } finally {
+          setLoading(false);
+      }
+  }
 
   function handleEdit(produk) {
     setEditMode(true)
@@ -199,6 +212,11 @@ async function handleToggleActive(id, currentStatus) {
     })
   }
 
+  function getJenisProdukName(id) {
+    const jenis = jenisProdukList.find(j => j.jenis_produk_id === id);
+    return jenis ? jenis.nama_jenis : 'N/A';
+  }
+
   // Format currency
   const formatCurrency = (value) => {
     return new Intl.NumberFormat('id-ID', {
@@ -208,22 +226,8 @@ async function handleToggleActive(id, currentStatus) {
     }).format(value)
   }
 
-  // Filter produk based on search
-  const filteredList = searchTerm
-    ? list.filter(p => 
-        p.nama_produk?.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-    : list
-
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h3 className="text-2xl font-bold text-slate-900">Manajemen Produk</h3>
-          <p className="text-sm text-slate-500 mt-1">Kelola produk dan stok UMKM Anda</p>
-        </div>
-      </div>
 
       {/* Statistics Cards */}
       {statistics && (
@@ -271,7 +275,7 @@ async function handleToggleActive(id, currentStatus) {
               </div>
               <div>
                 <p className="text-sm text-slate-600">Nilai Inventori</p>
-                <p className="text-lg font-bold text-slate-900">
+                <p className="text-2xl font-bold text-slate-900">
                   {formatCurrency(statistics.nilai_inventori || 0)}
                 </p>
               </div>
@@ -428,20 +432,20 @@ async function handleToggleActive(id, currentStatus) {
             type="text"
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
-            placeholder="Cari produk berdasarkan nama..."
+            placeholder="Cari produk berdasarkan kolom..."
             className="w-full pl-10 pr-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
           />
         </div>
       </div>
 
-      {/* Product List */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        <div className="p-4 border-b border-slate-200 bg-slate-50">
+      {/* Product List Table */}
+      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-x-auto">
+        <div className="p-4 border-b border-slate-200 bg-slate-50 lg:min-w-[1119px]">
           <div className="flex items-center justify-between">
             <div>
               <h4 className="font-semibold text-slate-900">Daftar Produk</h4>
               <p className="text-sm text-slate-500 mt-1">
-                Menampilkan {list.length > 0 ? ((currentPage - 1) * itemsPerPage + 1) : 0} - {Math.min(currentPage * itemsPerPage, totalItems)} dari {totalItems} produk
+                Menampilkan {list.length > 0 ? ((currentPage - 1) * itemsPerPage + 1) : 0} - {Math.min((currentPage - 1) * itemsPerPage + list.length, totalItems)} dari {totalItems} produk
               </p>
             </div>
             {totalPages > 1 && (
@@ -452,118 +456,155 @@ async function handleToggleActive(id, currentStatus) {
           </div>
         </div>
 
-        <div className="divide-y divide-slate-200">
-          {loading && list.length === 0 ? (
-            <div className="p-8 text-center">
-              <Loader className="h-8 w-8 animate-spin text-sky-600 mx-auto mb-2" />
-              <p className="text-sm text-slate-500">Memuat data produk...</p>
-            </div>
-          ) : filteredList.length === 0 ? (
-            <div className="p-8 text-center">
-              <Package className="h-12 w-12 text-slate-300 mx-auto mb-3" />
-              <p className="text-slate-600 font-medium mb-1">
-                {searchTerm ? 'Tidak ada produk yang cocok' : 'Belum ada produk'}
-              </p>
-              <p className="text-sm text-slate-500">
-                {searchTerm ? 'Coba gunakan kata kunci lain' : 'Tambahkan produk pertama Anda'}
-              </p>
-            </div>
-          ) : (
-            filteredList.map(produk => (
-              <div
-                key={produk.produk_id}
-                className="p-4 hover:bg-slate-50 transition-colors"
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-2">
-                      <h5 className="font-semibold text-slate-900">{produk.nama_produk}</h5>
-                      {produk.aktif ? (
-                        <span className="text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-700 font-medium flex items-center gap-1">
-                          <CheckCircle className="h-3 w-3" />
-                          Aktif
-                        </span>
-                      ) : (
-                        <span className="text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700 font-medium flex items-center gap-1">
-                          <XCircle className="h-3 w-3" />
-                          Nonaktif
-                        </span>
-                      )}
-                      {produk.stok === 0 && (
-                        <span className="text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 font-medium flex items-center gap-1">
-                          <AlertCircle className="h-3 w-3" />
-                          Stok Habis
-                        </span>
-                      )}
-                    </div>
-                    
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm">
-                      <div className="flex items-center gap-2 text-slate-600">
-                        
-                        <span className="font-medium">{formatCurrency(produk.harga)}</span>
-                      </div>
-                      
-                      <div className="flex items-center gap-2 text-slate-600">
-                        <TrendingUp className="h-3.5 w-3.5" />
-                        <span>Stok: <span className="font-medium">{produk.stok}</span></span>
-                      </div>
+            <table className="min-w-full divide-y divide-slate-200">
+                <thead className="bg-slate-50">
+                    <tr>
+                        <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                            No
+                        </th>
+                        <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                            Nama Produk
+                        </th>
+                        <th scope="col" className="px-4 py-3 text-center text-xs font-medium text-slate-500 uppercase tracking-wider">
+                            Kode Produk
+                        </th>
+                        <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                            Jenis Produk
+                        </th>
+                        <th scope="col" className="px-4 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">
+                            Stok
+                        </th>
+                        <th scope="col" className="px-4 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">
+                            Harga
+                        </th>
+                        <th scope="col" className="px-4 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">
+                            Nilai
+                        </th>
+                        <th scope="col" className="px-4 py-3 text-center text-xs font-medium text-slate-500 uppercase tracking-wider">
+                            Status
+                        </th>
+                        <th scope="col" className="px-4 py-3 text-center text-xs font-medium text-slate-500 uppercase tracking-wider">
+                            Aksi
+                        </th>
+                    </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-slate-200">
+                    {loading && totalItems === 0 ? (
+                                  <tr>
+                                    <td colSpan="9" className="p-8 text-center">
+                                      <Loader className="h-8 w-8 animate-spin text-sky-600 mx-auto mb-2" />
+                                      <p className="text-sm text-slate-500">Memuat data pelanggan...</p>
+                                    </td>
+                                  </tr>
+                                ) : list.length === 0 ? (
+                                  <tr>
+                                    <td colSpan="9" className="p-8 text-center">
+                                      <Package className="h-12 w-12 text-slate-300 mx-auto mb-3" />
+                                      <p className="text-slate-600 font-medium mb-1">
+                                        {searchTerm ? 'Tidak ada produk yang cocok' : 'Belum ada produk'}
+                                      </p>
+                                      <p className="text-sm text-slate-500">
+                                        {searchTerm ? 'Coba gunakan kata kunci lain' : 'Tambahkan produk pertama Anda'}
+                                      </p>
+                                    </td>
+                                  </tr>
+                                  ) : (list.map((produk, index) => {
+                                    const nilaiInventori = (produk.harga || 0) * (produk.stok || 0);
 
-                      <div className="flex items-center gap-2 text-slate-600">
-                        <Package className="h-3.5 w-3.5" />
-                        <span>Nilai: <span className="font-medium">{formatCurrency(produk.harga * produk.stok)}</span></span>
-                      </div>
-                    </div>
+                                    return (
+                                      <tr key={produk.produk_id} className="hover:bg-slate-50">
+                                      {/* NO */}
+                                      <td className="px-6 py-3 whitespace-nowrap text-sm text-slate-500">
+                                          {(currentPage - 1) * itemsPerPage + index + 1}.
+                                      </td>
+                                      
+                                      {/* NAMA PRODUK */}
+                                      <td className="px-6 py-3 whitespace-nowrap">
+                                          <div className="text-sm font-medium text-slate-900">{produk.nama_produk}</div>
+                                      </td>
+                                      
+                                      {/* KODE PRODUK (Diasumsikan ada field kode_produk) */}
+                                      <td className="px-6 py-3 whitespace-nowrap text-sm text-slate-500">
+                                          {produk.kode_produk || '-'}
+                                      </td>
 
-                    {produk.Umkm && (
-                      <div className="mt-2 text-xs text-slate-600">
-                        UMKM: {produk.Umkm.nama_umkm}
-                      </div>
-                    )}
-                  </div>
+                                      {/* JENIS PRODUK */}
+                                      <td className="px-6 py-3 whitespace-nowrap text-sm text-slate-500">
+                                          {getJenisProdukName(produk.jenis_produk_id)}
+                                      </td>
 
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => handleToggleActive(produk.produk_id, produk.aktif)}
-                      disabled={loading}
-                      className={`p-2 rounded-lg transition-colors disabled:opacity-50 ${
-                        produk.aktif 
-                          ? 'text-amber-600 hover:bg-amber-50' 
-                          : 'text-green-600 hover:bg-green-50'
-                      }`}
-                      title={produk.aktif ? 'Nonaktifkan' : 'Aktifkan'}
-                    >
-                      {produk.aktif ? (
-                        <XCircle className="h-4 w-4" />
-                      ) : (
-                        <CheckCircle className="h-4 w-4" />
-                      )}
-                    </button>
-                    <button
-                      onClick={() => handleEdit(produk)}
-                      disabled={loading}
-                      className="p-2 text-sky-600 hover:bg-sky-50 rounded-lg transition-colors disabled:opacity-50"
-                      title="Edit"
-                    >
-                      <Edit2 className="h-4 w-4" />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(produk.produk_id)}
-                      disabled={loading}
-                      className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
-                      title="Hapus"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))
-          )}
-        </div>
+                                      {/* STOK */}
+                                      <td className="px-6 py-3 whitespace-nowrap text-sm text-right font-medium text-slate-700">
+                                          {produk.stok}
+                                      </td>
+
+                                      {/* HARGA */}
+                                      <td className="px-6 py-3 whitespace-nowrap text-sm text-right text-slate-700">
+                                          {formatCurrency(produk.harga)}
+                                      </td>
+
+                                      {/* NILAI */}
+                                      <td className="px-6 py-3 whitespace-nowrap text-sm text-right font-semibold text-slate-900">
+                                          {formatCurrency(nilaiInventori)}
+                                      </td>
+
+                                      {/* STATUS */}
+                                      <td className="px-6 py-3 whitespace-nowrap text-sm text-right font-semibold text-slate-900">
+                                          <div className="text-xs text-slate-500 mt-0.5">
+                                              {produk.aktif ? (
+                                                  <span className="text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-700 font-medium">Aktif</span>
+                                              ) : (
+                                                  <span className="text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700 font-medium">Nonaktif</span>
+                                              )}
+                                              {produk.stok === 0 && (
+                                                  <span className="text-xs ml-1 px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 font-medium">Stok Habis</span>
+                                              )}
+                                          </div>
+                                      </td>
+
+                                      {/* AKSI */}
+                                      <td className="px-6 py-3 whitespace-nowrap text-center text-sm font-medium">
+                                          <div className="flex items-center justify-center gap-2">
+                                              <button
+                                                  onClick={() => handleToggleActive(produk.produk_id, produk.aktif)}
+                                                  disabled={loading}
+                                                  className={`p-2 rounded-lg transition-colors disabled:opacity-50 ${
+                                                      produk.aktif 
+                                                          ? 'text-amber-600 hover:bg-amber-50' 
+                                                          : 'text-green-600 hover:bg-green-50'
+                                                  }`}
+                                                  title={produk.aktif ? 'Nonaktifkan' : 'Aktifkan'}
+                                              >
+                                                  {produk.aktif ? <XCircle className="h-4 w-4" /> : <CheckCircle className="h-4 w-4" />}
+                                              </button>
+                                              <button
+                                                  onClick={() => handleEdit(produk)}
+                                                  disabled={loading}
+                                                  className="p-2 text-sky-600 hover:bg-sky-50 rounded-lg transition-colors disabled:opacity-50"
+                                                  title="Edit"
+                                              >
+                                                  <Edit2 className="h-4 w-4" />
+                                              </button>
+                                              <button
+                                                  onClick={() => handleDelete(produk.produk_id)}
+                                                  disabled={loading}
+                                                  className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
+                                                  title="Hapus"
+                                              >
+                                                  <Trash2 className="h-4 w-4" />
+                                              </button>
+                                          </div>
+                                      </td>
+                                  </tr>
+                                    )
+                                }))
+                              }
+                </tbody>
+            </table>
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="p-4 border-t border-slate-200 bg-slate-50">
+          <div className="p-4 border-t border-slate-200 bg-slate-50 w-full min-w-full">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
               <div className="text-sm text-slate-600 sm:hidden">
                 Halaman {currentPage} dari {totalPages}
