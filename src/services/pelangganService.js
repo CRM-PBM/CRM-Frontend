@@ -7,6 +7,9 @@ export const pelangganService = {
         const queryParams = new URLSearchParams()
         if (params.limit) queryParams.append('limit', params.limit)
         if (params.search) queryParams.append('search', params.search)
+        if (params.page) queryParams.append('page', params.page)
+        if (params.gender) queryParams.append('gender', params.gender)
+        if (params.level) queryParams.append('level', params.level)
 
         const url = queryParams.toString() ? `${PELANGGAN_URL}?${queryParams}` : PELANGGAN_URL
         const response = await api.get(url)

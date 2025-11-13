@@ -22,22 +22,24 @@ export default function Customers(){
   const [editMode, setEditMode] = useState(false)
   const [editId, setEditId] = useState(null)
 
-  useEffect(() => {
-    loadPelanggan()
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPage])
 
   async function loadPelanggan() {
     setLoading(true)
     try {
       const response = await pelangganService.getAll({ 
         page: currentPage, 
-        limit: itemsPerPage 
+        limit: itemsPerPage,
+        search: searchTerm 
       })
       if (response.success) {
         setList(response.data || [])
-        setTotalPages(response.totalPages || 1)
-        setTotalItems(response.total || 0)
+        if (response.pagination) {
+          setTotalPages(response.pagination.totalPages || 1)
+          setTotalItems(response.pagination.total || 0)
+        } else {
+           setTotalPages(1)
+           setTotalItems(response.data.length || 0)
+        }
       }
     } catch (error) {
       console.error('Error loading pelanggan:', error)
@@ -46,6 +48,20 @@ export default function Customers(){
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    loadPelanggan()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPage])
+
+  useEffect(() => {
+    if (currentPage !== 1) {
+      setCurrentPage(1)
+    } else {
+      loadPelanggan()
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchTerm])
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -70,7 +86,6 @@ export default function Customers(){
         }
       }
       
-      // Reset form
       setForm({
         nama: '',
         telepon: '',
@@ -80,8 +95,7 @@ export default function Customers(){
         level: 'Bronze'
       })
       
-      // Reload data
-      setCurrentPage(1) // Reset to first page
+      setCurrentPage(1)
       await loadPelanggan()
     } catch (error) {
       console.error('Error saving pelanggan:', error)
@@ -100,7 +114,6 @@ export default function Customers(){
       const response = await pelangganService.delete(id)
       if (response.success) {
         toast.success('Pelanggan berhasil dihapus')
-        // If deleting last item on page, go to previous page
         if (list.length === 1 && currentPage > 1) {
           setCurrentPage(currentPage - 1)
         } else {
@@ -126,7 +139,6 @@ export default function Customers(){
       gender: pelanggan.gender || 'Pria',
       level: pelanggan.level || 'Bronze'
     })
-    // Scroll to form
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
@@ -143,16 +155,6 @@ export default function Customers(){
     })
   }
 
-  // Filter pelanggan based on search (client-side filtering)
-  const filteredList = searchTerm
-    ? list.filter(c => 
-        c.nama?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        c.telepon?.includes(searchTerm) ||
-        c.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        c.alamat?.toLowerCase().includes(searchTerm.toLowerCase()) 
-      )
-    : list
-
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -163,7 +165,7 @@ export default function Customers(){
         </div>
         <div className="flex items-center gap-2 text-sm text-slate-600">
           <User className="h-4 w-4" />
-          <span className="font-medium">{list.length} Pelanggan</span>
+          <span className="font-medium">{totalItems} Pelanggan</span>
         </div>
       </div>
 
@@ -328,118 +330,166 @@ export default function Customers(){
         </div>
       </div>
 
-      {/* Customer List */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        <div className="p-4 border-b border-slate-200 bg-slate-50">
+      {/* Customer List (TABLE VIEW) */}
+      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-x-auto">
+        <div className="p-4 border-b border-slate-200 bg-slate-50 lg:min-w-full">
           <div className="flex items-center justify-between">
             <div>
               <h4 className="font-semibold text-slate-900">Daftar Pelanggan</h4>
               <p className="text-sm text-slate-500 mt-1">
-                Menampilkan {list.length > 0 ? ((currentPage - 1) * itemsPerPage + 1) : 0} - {Math.min(currentPage * itemsPerPage, totalItems)} dari {totalItems} pelanggan
+                Menampilkan {list.length > 0 ? ((currentPage - 1) * itemsPerPage + 1) : 0} - {Math.min((currentPage - 1) * itemsPerPage + list.length, totalItems)} dari {totalItems} pelanggan
               </p>
             </div>
             {totalPages > 1 && (
-              <div className="hidden md:flex items-center gap-1 text-sm text-slate-600">
+              <div className="hidden md:flex items-center gap-1 pr-6 text-sm text-slate-600">
                 Halaman {currentPage} dari {totalPages}
               </div>
             )}
           </div>
         </div>
 
-        <div className="divide-y divide-slate-200">
-          {loading && list.length === 0 ? (
-            <div className="p-8 text-center">
-              <Loader className="h-8 w-8 animate-spin text-sky-600 mx-auto mb-2" />
-              <p className="text-sm text-slate-500">Memuat data pelanggan...</p>
-            </div>
-          ) : filteredList.length === 0 ? (
-            <div className="p-8 text-center">
-              <User className="h-12 w-12 text-slate-300 mx-auto mb-3" />
-              <p className="text-slate-600 font-medium mb-1">
-                {searchTerm ? 'Tidak ada pelanggan yang cocok' : 'Belum ada pelanggan'}
-              </p>
-              <p className="text-sm text-slate-500">
-                {searchTerm ? 'Coba gunakan kata kunci lain' : 'Tambahkan pelanggan pertama Anda'}
-              </p>
-            </div>
-          ) : (
-            filteredList.map(pelanggan => (
-              <div
-                key={pelanggan.pelanggan_id}
-                className="p-4 hover:bg-slate-50 transition-colors"
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-2">
-                      <h5 className="font-semibold text-slate-900">{pelanggan.nama}</h5>
-                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+        <table className="min-w-full divide-y divide-slate-200">
+          {/* TABLE HEADER (THEAD) - Penyesuaian lebar kolom aksi */}
+          <thead className="bg-slate-50">
+            <tr>
+              <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-slate-800 uppercase tracking-wider w-18">
+                No
+              </th>
+              <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-slate-800 uppercase tracking-wider">
+                Nama
+              </th>
+              <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-slate-800 uppercase tracking-wider hidden sm:table-cell">
+                Kode Pelanggan
+              </th>
+              <th scope="col" className="px-3 py-3 text-center text-xs font-medium text-slate-800 uppercase tracking-wider hidden lg:table-cell">
+                Gender
+              </th>
+              <th scope="col" className="px-3 py-3 text-center text-xs font-medium text-slate-800 uppercase tracking-wider hidden sm:table-cell">
+                Telepon
+              </th>
+              <th scope="col" className="px-3 py-3 text-center text-xs font-medium text-slate-800 uppercase tracking-wider hidden md:table-cell">
+                Email
+              </th>
+              <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-slate-800 uppercase tracking-wider hidden md:table-cell">
+                Level
+              </th>
+              <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-slate-800 uppercase tracking-wider hidden xl:table-cell">
+                Alamat
+              </th>
+              <th scope="col" className="px-3 py-3 text-center text-xs font-medium text-slate-800 uppercase tracking-wider w-36">
+                Aksi 
+              </th>
+            </tr>
+          </thead>
+          
+          {/* TABLE BODY (TBODY) */}
+          <tbody className="bg-white divide-y divide-slate-200">
+            
+            {loading && totalItems === 0 ? (
+              <tr>
+                <td colSpan="9" className="p-8 text-center">
+                  <Loader className="h-8 w-8 animate-spin text-sky-600 mx-auto mb-2" />
+                  <p className="text-sm text-slate-500">Memuat data pelanggan...</p>
+                </td>
+              </tr>
+            ) : list.length === 0 ? (
+              <tr>
+                <td colSpan="9" className="p-8 text-center">
+                  <User className="h-12 w-12 text-slate-300 mx-auto mb-3" />
+                  <p className="text-slate-600 font-medium mb-1">
+                    {searchTerm ? 'Tidak ada pelanggan yang cocok' : 'Belum ada pelanggan'}
+                  </p>
+                  <p className="text-sm text-slate-500">
+                    {searchTerm ? 'Coba gunakan kata kunci lain' : 'Tambahkan pelanggan pertama Anda'}
+                  </p>
+                </td>
+              </tr>
+            ) : (
+              list.map((pelanggan, index) => (
+                <tr key={pelanggan.pelanggan_id} className="hover:bg-slate-50 transition-colors">
+                  {/* Kolom 1: Nomor Urut */}
+                  <td className="px-3 py-2 whitespace-nowrap text-sm text-slate-500">
+                    {(currentPage - 1) * itemsPerPage + index + 1}.
+                  </td>
+
+                  {/* Kolom 2: Nama */}
+                  <td className="px-3 py-2 whitespace-nowrap text-sm font-medium text-slate-900">
+                    {pelanggan.nama}
+                  </td>
+
+                  {/* Kolom 3: Kode Pelanggan */}
+                  <td className="px-3 py-2 whitespace-nowrap text-sm text-slate-600 hidden sm:table-cell">
+                    {pelanggan.kode_pelanggan || '-'}
+                  </td>
+
+                  {/* Kolom 4: Jenis Kelamin (Badge Warna) */}
+                  <td className="px-3 py-2 whitespace-nowrap hidden text-center lg:table-cell">
+                    <span className={`text-sm px-2 py-0.5 rounded-full font-medium ${
+                        pelanggan.gender === 'Pria' ? 'bg-blue-100 text-blue-700' :
+                        pelanggan.gender === 'Wanita' ? 'bg-pink-100 text-pink-700' :
+                        'bg-slate-100 text-slate-700'
+                    }`}>
+                      {pelanggan.gender}
+                    </span>
+                  </td>
+                  
+                  {/* Kolom 5: Kontak (Telepon) */}
+                  <td className="px-3 py-2 whitespace-nowrap text-center text-sm text-slate-900 hidden sm:table-cell">
+                    {pelanggan.telepon || '-'}
+                  </td>
+
+                  {/* Kolom 6: Email */}
+                  <td className="px-3 py-2 whitespace-nowrap text-sm text-slate-500 hidden md:table-cell">
+                    {pelanggan.email || '-'}
+                  </td>
+                  
+                  {/* Kolom 7: Level */}
+                  <td className="px-3 py-2 whitespace-nowrap hidden md:table-cell">
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
                         pelanggan.level === 'Platinum' ? 'bg-purple-100 text-purple-700' :
                         pelanggan.level === 'Gold' ? 'bg-yellow-100 text-yellow-700' :
                         pelanggan.level === 'Silver' ? 'bg-slate-100 text-slate-700' :
                         'bg-orange-100 text-orange-700'
-                      }`}>
-                        {pelanggan.level}
-                      </span>
-                      <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 font-medium">
-                        {pelanggan.gender}
-                      </span>
-                    </div>
-                    
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2 text-sm text-slate-600">
-                        <Phone className="h-3.5 w-3.5" />
-                        <span>{pelanggan.telepon}</span>
-                      </div>
-                      
-                      {pelanggan.email && (
-                        <div className="flex items-center gap-2 text-sm text-slate-600">
-                          <Mail className="h-3.5 w-3.5" />
-                          <span>{pelanggan.email}</span>
-                        </div>
-                      )}
-                      
-                      {pelanggan.alamat && (
-                        <div className="flex items-center gap-2 text-sm text-slate-600">
-                          <MapPin className="h-3.5 w-3.5" />
-                          <span className="line-clamp-1">{pelanggan.alamat}</span>
-                        </div>
-                      )}
-                    </div>
+                    }`}>
+                      {pelanggan.level}
+                    </span>
+                  </td>
 
-                    {pelanggan.Umkm && (
-                      <div className="mt-2 text-xs text-slate-500">
-                        UMKM: {pelanggan.Umkm.nama_umkm}
-                      </div>
-                    )}
-                  </div>
+                  {/* Kolom 8: Alamat */}
+                  <td className="px-3 py-2 max-w-xs truncate text-sm text-slate-500 hidden xl:table-cell">
+                    {pelanggan.alamat || '-'}
+                  </td>
 
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => handleEdit(pelanggan)}
-                      disabled={loading}
-                      className="p-2 text-sky-600 hover:bg-sky-50 rounded-lg transition-colors disabled:opacity-50"
-                      title="Edit"
-                    >
-                      <Edit2 className="h-4 w-4" />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(pelanggan.pelanggan_id)}
-                      disabled={loading}
-                      className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
-                      title="Hapus"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))
-          )}
-        </div>
+                  {/* Kolom 9: Aksi (Edit/Hapus) - Tombol Aksi Diperbaiki */}
+                  <td className="px-3 py-2 whitespace-nowrap text-center text-sm font-medium w-34">
+                    <div className="flex justify-center gap-2">
+                      <button
+                        onClick={() => handleEdit(pelanggan)}
+                        disabled={loading}
+                        className="flex items-center gap-1 p-2 text-sky-600 hover:bg-sky-50 rounded-lg transition-colors disabled:opacity-50"
+                        title="Edit"
+                      >
+                        <Edit2 className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(pelanggan.pelanggan_id)}
+                        disabled={loading}
+                        className="flex items-center gap-1 p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
+                        title="Hapus"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="p-4 border-t border-slate-200 bg-slate-50">
+          <div className="p-4 border-t border-slate-200 bg-white">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
               {/* Mobile Page Info */}
               <div className="text-sm text-slate-600 sm:hidden">
@@ -448,7 +498,6 @@ export default function Customers(){
 
               {/* Pagination Controls */}
               <div className="flex items-center gap-2">
-                {/* Previous Button */}
                 <button
                   onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                   disabled={currentPage === 1 || loading}
@@ -523,7 +572,7 @@ export default function Customers(){
                     }
 
                     // Last page
-                    if (totalPages > 1) {
+                    if (totalPages > 1 && totalPages !== 1) {
                       pages.push(
                         <button
                           key={totalPages}

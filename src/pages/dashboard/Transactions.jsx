@@ -72,7 +72,7 @@ export default function Transactions(){
 
   async function loadStatistics() {
     try {
-      const response = await transaksiService.getStatistics()
+      const response = await transaksiService.getStatistik()
       if (response.success) {
         setStatistics(response.data)
       }
@@ -313,7 +313,7 @@ export default function Transactions(){
               </div>
               <div>
                 <p className="text-sm text-slate-600">Rata-rata Transaksi</p>
-                <p className="text-lg font-bold text-slate-900">
+                <p className="text-xl font-bold text-slate-900">
                   {formatCurrency(statistics.rata_rata || 0)}
                 </p>
               </div>
@@ -728,7 +728,7 @@ export default function Transactions(){
           </table>
         )}
 
-        {/* Pagination (Kode tidak berubah) */}
+        {/* Pagination */}
         {totalPages > 1 && (
           <div className="p-4 border-t border-slate-200 bg-slate-50">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
