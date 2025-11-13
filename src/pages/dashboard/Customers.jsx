@@ -22,6 +22,19 @@ export default function Customers(){
   const [editMode, setEditMode] = useState(false)
   const [editId, setEditId] = useState(null)
 
+  useEffect(() => {
+    loadPelanggan()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPage])
+
+  useEffect(() => {
+    if (currentPage !== 1) {
+      setCurrentPage(1)
+    } else {
+      loadPelanggan()
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchTerm])
 
   async function loadPelanggan() {
     setLoading(true)
@@ -48,20 +61,6 @@ export default function Customers(){
       setLoading(false)
     }
   }
-
-  useEffect(() => {
-    loadPelanggan()
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPage])
-
-  useEffect(() => {
-    if (currentPage !== 1) {
-      setCurrentPage(1)
-    } else {
-      loadPelanggan()
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchTerm])
 
   async function handleSubmit(e) {
     e.preventDefault()
