@@ -15,6 +15,7 @@ export default function Sidebar({ view, setView, sidebarOpen, setSidebarOpen, co
     { key: 'transactions', label: 'Transaksi', icon: CreditCard },
     { key: 'wa', label: 'Kirim WA', icon: MessageSquare },
     { key: 'invoices', label: 'Nota & Laporan', icon: FileText },
+    { key: 'wablast', label: 'Kirim WA', icon: MessageSquare }
   ]
 
   const handleLogout = async () => {
@@ -59,7 +60,7 @@ export default function Sidebar({ view, setView, sidebarOpen, setSidebarOpen, co
           {/* Mobile Header */}
           <div className="flex items-center justify-between p-4 border-b border-slate-100">
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-sky-500 to-sky-600 flex items-center justify-center text-white font-bold text-sm">
+              <div className="flex items-center justify-center w-10 h-10 text-sm font-bold text-white rounded-lg bg-gradient-to-br from-sky-500 to-sky-600">
                 UM
               </div>
               <div>
@@ -69,10 +70,10 @@ export default function Sidebar({ view, setView, sidebarOpen, setSidebarOpen, co
             </div>
             <button 
               onClick={()=>setSidebarOpen(false)} 
-              className="p-2 rounded-lg hover:bg-slate-100 transition-colors"
+              className="p-2 transition-colors rounded-lg hover:bg-slate-100"
               aria-label="Tutup sidebar"
             >
-              <X className="h-5 w-5 text-slate-400" />
+              <X className="w-5 h-5 text-slate-400" />
             </button>
           </div>
 
@@ -100,16 +101,16 @@ export default function Sidebar({ view, setView, sidebarOpen, setSidebarOpen, co
           </nav>
 
           {/* Mobile Footer */}
-          <div className="p-4 border-t border-slate-100 space-y-1">
+          <div className="p-4 space-y-1 border-t border-slate-100">
             <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-600 hover:bg-slate-50 transition-colors">
-              <Settings className="h-5 w-5 text-slate-400" />
+              <Settings className="w-5 h-5 text-slate-400" />
               <span>Pengaturan</span>
             </button>
             <button 
               onClick={handleLogout}
               className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-600 hover:bg-slate-50 transition-colors"
             >
-              <LogOut className="h-5 w-5 text-slate-400" />
+              <LogOut className="w-5 h-5 text-slate-400" />
               <span>Keluar</span>
             </button>
           </div>
@@ -118,37 +119,37 @@ export default function Sidebar({ view, setView, sidebarOpen, setSidebarOpen, co
 
       {/* Desktop Sidebar - Sticky sidebar with proper height */}
       <div className={`hidden md:block h-full transition-all duration-300 ${collapsed ? 'w-20' : 'w-72'}`}>
-        <aside className="h-full bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+        <aside className="flex flex-col h-full overflow-hidden bg-white border shadow-sm rounded-2xl border-slate-200">
           {/* Desktop Header */}
           <div className={`p-5 border-b border-slate-100 ${collapsed ? 'p-3' : ''}`}>
             <div className={`flex items-center gap-3 ${collapsed ? 'flex-col' : ''}`}>
-              <div className="h-10 w-10 flex-shrink-0 rounded-lg bg-gradient-to-br from-sky-500 to-sky-600 flex items-center justify-center text-white font-bold text-sm shadow-md">
+              <div className="flex items-center justify-center flex-shrink-0 w-10 h-10 text-sm font-bold text-white rounded-lg shadow-md bg-gradient-to-br from-sky-500 to-sky-600">
                 UM
               </div>
               {!collapsed && (
                 <>
                   <div className="flex-1 min-w-0">
-                    <div className="text-sm font-semibold text-slate-900 truncate">UMKM Saya</div>
-                    <div className="text-xs text-slate-500 truncate">Kelola usaha Anda</div>
+                    <div className="text-sm font-semibold truncate text-slate-900">UMKM Saya</div>
+                    <div className="text-xs truncate text-slate-500">Kelola usaha Anda</div>
                   </div>
                   <button 
                     onClick={()=>setCollapsed(!collapsed)} 
-                    className="p-2 rounded-lg hover:bg-slate-50 transition-colors"
+                    className="p-2 transition-colors rounded-lg hover:bg-slate-50"
                     aria-label="Sempitkan sidebar"
                     title="Sempitkan sidebar"
                   >
-                    <ChevronLeft className="h-4 w-4 text-slate-400" />
+                    <ChevronLeft className="w-4 h-4 text-slate-400" />
                   </button>
                 </>
               )}
               {collapsed && (
                 <button 
                   onClick={()=>setCollapsed(!collapsed)} 
-                  className="w-full p-2 rounded-lg hover:bg-slate-50 transition-colors"
+                  className="w-full p-2 transition-colors rounded-lg hover:bg-slate-50"
                   aria-label="Perluas sidebar"
                   title="Perluas sidebar"
                 >
-                  <ChevronRight className="h-4 w-4 text-slate-400 mx-auto" />
+                  <ChevronRight className="w-4 h-4 mx-auto text-slate-400" />
                 </button>
               )}
             </div>
@@ -182,7 +183,7 @@ export default function Sidebar({ view, setView, sidebarOpen, setSidebarOpen, co
           {/* Desktop Footer */}
           <div className={`p-4 border-t border-slate-100 space-y-1 ${collapsed ? 'p-2' : ''}`}>
             <button className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-600 hover:bg-slate-50 transition-colors ${collapsed ? 'justify-center' : ''}`} title={collapsed ? 'Pengaturan' : ''}>
-              <Settings className="h-5 w-5 text-slate-400 flex-shrink-0" />
+              <Settings className="flex-shrink-0 w-5 h-5 text-slate-400" />
               {!collapsed && <span>Pengaturan</span>}
             </button>
             <button 
@@ -190,7 +191,7 @@ export default function Sidebar({ view, setView, sidebarOpen, setSidebarOpen, co
               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-600 hover:bg-slate-50 transition-colors ${collapsed ? 'justify-center' : ''}`} 
               title={collapsed ? 'Keluar' : ''}
             >
-              <LogOut className="h-5 w-5 text-slate-400 flex-shrink-0" />
+              <LogOut className="flex-shrink-0 w-5 h-5 text-slate-400" />
               {!collapsed && <span>Keluar</span>}
             </button>
           </div>

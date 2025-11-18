@@ -7,6 +7,7 @@ import Customers from './dashboard/Customers'
 import Products from './dashboard/Products'
 import Transactions from './dashboard/Transactions'
 import WaBlast from './dashboard/WaBlast'
+import WaBlastBaileys from './dashboard/WaBlastBaileys'
 import Invoices from './dashboard/Invoices'
 import DashboardTopbar from '../components/DashboardTopbar'
 import Sidebar from '../components/Sidebar'
@@ -192,125 +193,125 @@ export default function Dashboard(){
         </div>
 
         {/* Main Content */}
-        <main className="flex-1 min-w-0 p-4 md:p-6 overflow-y-auto">
+        <main className="flex-1 min-w-0 p-4 overflow-y-auto md:p-6">
           <DashboardTopbar 
             onToggleSidebar={()=>setSidebarOpen(s => !s)} 
-            title={view==='overview'?'Ringkasan': view==='customers'?'Manajemen Pelanggan': view==='products'?'Manajemen Produk': view==='transactions'?'Pencatatan Transaksi': view==='wa'?'WA Blast': 'Nota & Laporan'} 
+            title={view==='overview'?'Ringkasan': view==='customers'?'Manajemen Pelanggan': view==='products'?'Manajemen Produk': view==='transactions'?'Pencatatan Transaksi': view==='wa'?'WA Blast': view==='wablast'?'WA Blast': 'Nota & Laporan'} 
           />
 
             {view==='overview' && (
               <>
                 {/* KPI Cards */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                <div className="grid grid-cols-1 gap-4 mb-6 sm:grid-cols-2 lg:grid-cols-4">
                   {/* Pendapatan Bulan Ini */}
-                  <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                  <div className="p-5 bg-white border shadow-sm rounded-xl border-slate-200">
                     <div className="flex items-center justify-between mb-3">
                       <div className="p-2 bg-green-100 rounded-lg">
-                        <DollarSign className="h-6 w-6 text-green-600" />
+                        <DollarSign className="w-6 h-6 text-green-600" />
                       </div>
                       {dashboardData.transaksi.pertumbuhan > 0 ? (
-                        <div className="flex items-center gap-1 text-green-600 text-sm font-medium">
-                          <ArrowUpRight className="h-4 w-4" />
+                        <div className="flex items-center gap-1 text-sm font-medium text-green-600">
+                          <ArrowUpRight className="w-4 h-4" />
                           {dashboardData.transaksi.pertumbuhan}%
                         </div>
                       ) : (
-                        <div className="flex items-center gap-1 text-red-600 text-sm font-medium">
-                          <ArrowDownRight className="h-4 w-4" />
+                        <div className="flex items-center gap-1 text-sm font-medium text-red-600">
+                          <ArrowDownRight className="w-4 h-4" />
                           {Math.abs(dashboardData.transaksi.pertumbuhan)}%
                         </div>
                       )}
                     </div>
-                    <div className="text-sm text-slate-600 mb-1">Pendapatan Bulan Ini</div>
+                    <div className="mb-1 text-sm text-slate-600">Pendapatan Bulan Ini</div>
                     <div className="text-2xl font-bold text-slate-900">
                       {formatCurrency(dashboardData.transaksi.pendapatan_bulan_ini)}
                     </div>
-                    <div className="text-xs text-slate-500 mt-2">
+                    <div className="mt-2 text-xs text-slate-500">
                       Hari ini: {formatCurrency(dashboardData.transaksi.pendapatan_hari_ini)}
                     </div>
                   </div>
 
                   {/* Total Pelanggan */}
-                  <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                  <div className="p-5 bg-white border shadow-sm rounded-xl border-slate-200">
                     <div className="flex items-center justify-between mb-3">
-                      <div className="p-2 bg-sky-100 rounded-lg">
-                        <Users className="h-6 w-6 text-sky-600" />
+                      <div className="p-2 rounded-lg bg-sky-100">
+                        <Users className="w-6 h-6 text-sky-600" />
                       </div>
-                      <div className="text-green-600 text-sm font-medium">
+                      <div className="text-sm font-medium text-green-600">
                         +{dashboardData.pelanggan.baru_bulan_ini} baru
                       </div>
                     </div>
-                    <div className="text-sm text-slate-600 mb-1">Total Pelanggan</div>
+                    <div className="mb-1 text-sm text-slate-600">Total Pelanggan</div>
                     <div className="text-2xl font-bold text-slate-900">
                       {formatNumber(dashboardData.pelanggan.total)}
                     </div>
-                    <div className="text-xs text-slate-500 mt-2">
+                    <div className="mt-2 text-xs text-slate-500">
                       Pertumbuhan {dashboardData.pelanggan.pertumbuhan}% bulan ini
                     </div>
                   </div>
 
                   {/* Total Transaksi */}
-                  <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                  <div className="p-5 bg-white border shadow-sm rounded-xl border-slate-200">
                     <div className="flex items-center justify-between mb-3">
                       <div className="p-2 bg-purple-100 rounded-lg">
-                        <ShoppingCart className="h-6 w-6 text-purple-600" />
+                        <ShoppingCart className="w-6 h-6 text-purple-600" />
                       </div>
-                      <div className="text-sky-600 text-sm font-medium">
+                      <div className="text-sm font-medium text-sky-600">
                         {dashboardData.transaksi.total_hari_ini} hari ini
                       </div>
                     </div>
-                    <div className="text-sm text-slate-600 mb-1">Transaksi Bulan Ini</div>
+                    <div className="mb-1 text-sm text-slate-600">Transaksi Bulan Ini</div>
                     <div className="text-2xl font-bold text-slate-900">
                       {dashboardData.transaksi.total_bulan_ini}
                     </div>
-                    <div className="text-xs text-slate-500 mt-2">
+                    <div className="mt-2 text-xs text-slate-500">
                       Rata-rata: {formatCurrency(dashboardData.transaksi.rata_rata)}
                     </div>
                   </div>
 
                   {/* Nilai Inventori */}
-                  <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                  <div className="p-5 bg-white border shadow-sm rounded-xl border-slate-200">
                     <div className="flex items-center justify-between mb-3">
-                      <div className="p-2 bg-amber-100 rounded-lg">
-                        <Package className="h-6 w-6 text-amber-600" />
+                      <div className="p-2 rounded-lg bg-amber-100">
+                        <Package className="w-6 h-6 text-amber-600" />
                       </div>
                       {dashboardData.produk.stok_rendah > 0 && (
-                        <div className="flex items-center gap-1 text-red-600 text-sm font-medium">
-                          <AlertCircle className="h-4 w-4" />
+                        <div className="flex items-center gap-1 text-sm font-medium text-red-600">
+                          <AlertCircle className="w-4 h-4" />
                           {dashboardData.produk.stok_rendah}
                         </div>
                       )}
                     </div>
-                    <div className="text-sm text-slate-600 mb-1">Nilai Inventori</div>
+                    <div className="mb-1 text-sm text-slate-600">Nilai Inventori</div>
                     <div className="text-2xl font-bold text-slate-900">
                       {formatCurrency(dashboardData.produk.nilai_inventori)}
                     </div>
-                    <div className="text-xs text-slate-500 mt-2">
+                    <div className="mt-2 text-xs text-slate-500">
                       {dashboardData.produk.aktif} dari {dashboardData.produk.total} produk aktif
                     </div>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
                   {/* Top 5 Products */}
-                  <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                  <div className="p-5 bg-white border shadow-sm rounded-xl border-slate-200">
                     <div className="flex items-center gap-2 mb-4">
-                      <TrendingUp className="h-5 w-5 text-sky-600" />
+                      <TrendingUp className="w-5 h-5 text-sky-600" />
                       <h3 className="font-semibold text-slate-900">Top 5 Produk</h3>
                     </div>
-                    <div className="text-xs text-slate-500 mb-3">Berdasarkan nilai stok</div>
+                    <div className="mb-3 text-xs text-slate-500">Berdasarkan nilai stok</div>
                     {loading ? (
-                      <div className="text-center py-4 text-slate-400">Loading...</div>
+                      <div className="py-4 text-center text-slate-400">Loading...</div>
                     ) : dashboardData.topProducts.length === 0 ? (
-                      <div className="text-center py-4 text-slate-400">Belum ada data</div>
+                      <div className="py-4 text-center text-slate-400">Belum ada data</div>
                     ) : (
                       <div className="space-y-3">
                         {dashboardData.topProducts.map((produk, index) => (
                           <div key={produk.produk_id} className="flex items-center gap-3">
-                            <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-sky-100 flex items-center justify-center text-sky-600 font-semibold text-sm">
+                            <div className="flex items-center justify-center flex-shrink-0 w-8 h-8 text-sm font-semibold rounded-lg bg-sky-100 text-sky-600">
                               {index + 1}
                             </div>
                             <div className="flex-1 min-w-0">
-                              <div className="text-sm font-medium text-slate-900 truncate">
+                              <div className="text-sm font-medium truncate text-slate-900">
                                 {produk.nama_produk}
                               </div>
                               <div className="text-xs text-slate-500">
@@ -327,20 +328,20 @@ export default function Dashboard(){
                   </div>
 
                   {/* Recent Transactions */}
-                  <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                  <div className="p-5 bg-white border shadow-sm rounded-xl border-slate-200">
                     <div className="flex items-center gap-2 mb-4">
-                      <Calendar className="h-5 w-5 text-purple-600" />
+                      <Calendar className="w-5 h-5 text-purple-600" />
                       <h3 className="font-semibold text-slate-900">Transaksi Terbaru</h3>
                     </div>
-                    <div className="text-xs text-slate-500 mb-3">5 transaksi terakhir</div>
+                    <div className="mb-3 text-xs text-slate-500">5 transaksi terakhir</div>
                     {loading ? (
-                      <div className="text-center py-4 text-slate-400">Loading...</div>
+                      <div className="py-4 text-center text-slate-400">Loading...</div>
                     ) : dashboardData.recentTransactions.length === 0 ? (
-                      <div className="text-center py-4 text-slate-400">Belum ada transaksi</div>
+                      <div className="py-4 text-center text-slate-400">Belum ada transaksi</div>
                     ) : (
                       <div className="space-y-3">
                         {dashboardData.recentTransactions.map((transaksi) => (
-                          <div key={transaksi.transaksi_id} className="border-b border-slate-100 pb-3 last:border-0">
+                          <div key={transaksi.transaksi_id} className="pb-3 border-b border-slate-100 last:border-0">
                             <div className="flex items-start justify-between mb-1">
                               <div className="flex-1 min-w-0">
                                 <div className="text-sm font-medium text-slate-900">
@@ -366,24 +367,24 @@ export default function Dashboard(){
                   </div>
 
                   {/* Low Stock Alert */}
-                  <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                  <div className="p-5 bg-white border shadow-sm rounded-xl border-slate-200">
                     <div className="flex items-center gap-2 mb-4">
-                      <AlertCircle className="h-5 w-5 text-red-600" />
+                      <AlertCircle className="w-5 h-5 text-red-600" />
                       <h3 className="font-semibold text-slate-900">Stok Rendah (-10 Stok)</h3>
                     </div>
-                    <div className="text-xs text-slate-500 mb-3">Produk perlu restock</div>
+                    <div className="mb-3 text-xs text-slate-500">Produk perlu restock</div>
                     {loading ? (
-                      <div className="text-center py-4 text-slate-400">Loading...</div>
+                      <div className="py-4 text-center text-slate-400">Loading...</div>
                     ) : dashboardData.lowStockProducts.length === 0 ? (
-                      <div className="text-center py-4 text-green-600 text-sm">
+                      <div className="py-4 text-sm text-center text-green-600">
                         ✓ Semua stok aman
                       </div>
                     ) : (
                       <div className="space-y-3">
                         {dashboardData.lowStockProducts.map((produk) => (
-                          <div key={produk.produk_id} className="flex items-center gap-3 p-2 bg-red-50 rounded-lg border border-red-100">
+                          <div key={produk.produk_id} className="flex items-center gap-3 p-2 border border-red-100 rounded-lg bg-red-50">
                             <div className="flex-1 min-w-0">
-                              <div className="text-sm font-medium text-slate-900 truncate">
+                              <div className="text-sm font-medium truncate text-slate-900">
                                 {produk.nama_produk}
                               </div>
                               <div className="text-xs text-slate-500">
@@ -407,10 +408,10 @@ export default function Dashboard(){
                 </div>
 
                 {/* Business Insights */}
-                <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 gap-6 mt-6 lg:grid-cols-2">
                   {/* Summary Card */}
-                  <div className="bg-gradient-to-br from-sky-500 to-sky-600 p-6 rounded-xl shadow-lg text-white">
-                    <h3 className="text-lg font-semibold mb-4">Ringkasan Bisnis</h3>
+                  <div className="p-6 text-white shadow-lg bg-gradient-to-br from-sky-500 to-sky-600 rounded-xl">
+                    <h3 className="mb-4 text-lg font-semibold">Ringkasan Bisnis</h3>
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
                         <span className="text-sky-100">Pendapatan per Transaksi</span>
@@ -440,38 +441,38 @@ export default function Dashboard(){
                   </div>
 
                   {/* Quick Actions */}
-                  <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-                    <h3 className="text-lg font-semibold text-slate-900 mb-4">Aksi Cepat</h3>
+                  <div className="p-6 bg-white border shadow-sm rounded-xl border-slate-200">
+                    <h3 className="mb-4 text-lg font-semibold text-slate-900">Aksi Cepat</h3>
                     <div className="grid grid-cols-2 gap-3">
                       <button
                         onClick={() => setView('transactions')}
-                        className="p-4 bg-sky-50 hover:bg-sky-100 rounded-lg border border-sky-200 transition-colors text-left"
+                        className="p-4 text-left transition-colors border rounded-lg bg-sky-50 hover:bg-sky-100 border-sky-200"
                       >
-                        <ShoppingCart className="h-5 w-5 text-sky-600 mb-2" />
+                        <ShoppingCart className="w-5 h-5 mb-2 text-sky-600" />
                         <div className="text-sm font-medium text-slate-900">Transaksi Baru</div>
                         <div className="text-xs text-slate-500">Buat transaksi</div>
                       </button>
                       <button
                         onClick={() => setView('customers')}
-                        className="p-4 bg-purple-50 hover:bg-purple-100 rounded-lg border border-purple-200 transition-colors text-left"
+                        className="p-4 text-left transition-colors border border-purple-200 rounded-lg bg-purple-50 hover:bg-purple-100"
                       >
-                        <Users className="h-5 w-5 text-purple-600 mb-2" />
+                        <Users className="w-5 h-5 mb-2 text-purple-600" />
                         <div className="text-sm font-medium text-slate-900">Kelola Pelanggan</div>
                         <div className="text-xs text-slate-500">Lihat & tambah</div>
                       </button>
                       <button
                         onClick={() => setView('products')}
-                        className="p-4 bg-amber-50 hover:bg-amber-100 rounded-lg border border-amber-200 transition-colors text-left"
+                        className="p-4 text-left transition-colors border rounded-lg bg-amber-50 hover:bg-amber-100 border-amber-200"
                       >
-                        <Package className="h-5 w-5 text-amber-600 mb-2" />
+                        <Package className="w-5 h-5 mb-2 text-amber-600" />
                         <div className="text-sm font-medium text-slate-900">Kelola Produk</div>
                         <div className="text-xs text-slate-500">Update stok</div>
                       </button>
                       <button
                         onClick={() => setView('wa')}
-                        className="p-4 bg-green-50 hover:bg-green-100 rounded-lg border border-green-200 transition-colors text-left"
+                        className="p-4 text-left transition-colors border border-green-200 rounded-lg bg-green-50 hover:bg-green-100"
                       >
-                        <BarChart2 className="h-5 w-5 text-green-600 mb-2" />
+                        <BarChart2 className="w-5 h-5 mb-2 text-green-600" />
                         <div className="text-sm font-medium text-slate-900">Broadcast WA</div>
                         <div className="text-xs text-slate-500">Kirim promo</div>
                       </button>
@@ -486,6 +487,7 @@ export default function Dashboard(){
             {view==='transactions' && <Transactions />}
             {view==='wa' && <WaBlast />}
             {view==='invoices' && <Invoices />}
+            {view==='wablast' && <WaBlastBaileys />}
         </main>
       </div>
     </div>
