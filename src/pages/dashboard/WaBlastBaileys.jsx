@@ -22,15 +22,26 @@ import { waBlastService } from "../../services/WaBlastApi";
 import QRCode from "react-qr-code";
 
 export default function WaBlast() {
+  // ===============================================
+  // 1. STATE DECLARATIONS & REFS
+  // ===============================================
+
+  // === 1. DATA UTAMA & STATUS GLOBAL ===
   const [customers, setCustomers] = useState([]);
   const [selectedCustomers, setSelectedCustomers] = useState([]);
   const [broadcasts, setBroadcasts] = useState([]);
   const [statistics, setStatistics] = useState(null);
+
+  // === 2. STATUS DEVICE & KONEKSI WA ===
   const [deviceStatus, setDeviceStatus] = useState({
     connected: false,
     loading: true,
   });
-  const [loading, setLoading] = useState(false);
+  const [isQrModalOpen, setIsQrModalOpen] = useState(false);
+  const [qrValue, setQrValue] = useState("");
+  const [connecting, setConnecting] = useState(false);
+
+  // === 3. FORM PESAN & UPLOAD ===
   const [form, setForm] = useState({
     judul_pesan: "",
     isi_pesan: "",
@@ -39,22 +50,28 @@ export default function WaBlast() {
     gambarPreviewUrl: null,
     inputKey: Date.now(),
   });
-  const textareaRef = useRef(null);
-  const [isQrModalOpen, setIsQrModalOpen] = useState(false);
-  const [qrValue, setQrValue] = useState("");
-  const [connecting, setConnecting] = useState(false);
+  const textareaRef = useRef(null); // Ref untuk fokus/posisi kursor di textarea
+  const formRef = useRef(null); // Ref untuk scrolling ke form
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [loading, setLoading] = useState(false); // Status loading saat send blast
+
+  // === 4. MODAL & LOG DETAIL BLAST ===
+  const [broadcastModalOpen, setBroadcastModalOpen] = useState(false);
+  const [details, setDetails] = useState([]);
+  const [loadingDetails, setLoadingDetails] = useState(false);
+
+  // === 5. CUSTOMER PICKER MODAL (FILTER & SORT) ===
   const [showCustomerPicker, setShowCustomerPicker] = useState(false);
-  const formRef = useRef(null);
   const [search, setSearch] = useState("");
   const [activeLevel, setActiveLevel] = useState("ALL");
   const [sortName, setSortName] = useState("asc");
   const [sortLevel, setSortLevel] = useState(null);
-  const [details, setDetails] = useState([]);
-  const [loadingDetails, setLoadingDetails] = useState(false);
-  const [broadcastModalOpen, setBroadcastModalOpen] = useState(false);
 
-  // Template pesan yang sudah jadi
+  // ===============================================
+  // 2. STATIC DATA
+  // ===============================================
+
+  /* Template pesan yang sudah jadi */
   const messageTemplates = [
     {
       id: 1,
@@ -122,17 +139,25 @@ export default function WaBlast() {
     },
   ];
 
+  // ===============================================
+  // 3. DERIVED STATES / useMemo
+  // ===============================================
+
+  /* Mendapatkan daftar level unik dari pelanggan */
   const uniqueLevels = useMemo(() => {
     // Menghitung daftar level unik hanya saat 'customers' berubah
     return [...new Set(customers.map((pelanggan) => pelanggan.level))];
   }, [customers]);
 
+  // Menyiapkan array level untuk filter (termasuk opsi "ALL") dan tombol pilih cepat
   const allLevels = ["ALL", ...uniqueLevels];
   const selectableLevels = uniqueLevels;
 
+  /* Memproses pelanggan: Filtering (Pencarian & Level) dan Sorting */
   const processedCustomers = useMemo(() => {
     const levelOrder = { Bronze: 1, Silver: 2, Gold: 3, Platinum: 4 };
-    // 1. Filtering
+
+    // 1. Filtering: Menerapkan pencarian nama/telepon dan filter level aktif
     const filtered = customers.filter((pelanggan) => {
       const matchesSearch =
         pelanggan.nama.toLowerCase().includes(search.toLowerCase()) ||
@@ -144,9 +169,9 @@ export default function WaBlast() {
       return matchesSearch && matchesLevel;
     });
 
-    // 2. Sorting
+    // 2. Sorting: Mengurutkan berdasarkan Level, kemudian Nama
     return [...filtered].sort((a, b) => {
-      // sort by level
+      // Urutkan berdasarkan level jika sortLevel aktif
       if (sortLevel) {
         const levelDiff =
           sortLevel === "asc"
@@ -155,29 +180,104 @@ export default function WaBlast() {
         if (levelDiff !== 0) return levelDiff;
       }
 
-      // sort by nama
+      // Urutkan berdasarkan nama
       return sortName === "asc"
         ? a.nama.localeCompare(b.nama)
         : b.nama.localeCompare(a.nama);
     });
   }, [customers, search, activeLevel, sortName, sortLevel]);
 
-  // toggle select
-  const selectByLevel = (level) => {
-    const ids = processedCustomers
-      .filter((pelanggan) => pelanggan.level === level)
-      .map((pelanggan) => pelanggan.pelanggan_id);
+  // ===============================================
+  // 4. UTILITY FUNCTIONS (Non-Event Handler/Non-Hook)
+  // ===============================================
 
-    const allSelected = ids.every((id) => selectedCustomers.includes(id));
+  /* Komponen mikro untuk menampilkan badge status*/
+  // eslint-disable-next-line no-unused-vars
+  const StatusBadge = ({ color, Icon, label }) => (
+    <span
+      className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${color}`}
+    >
+      <Icon className="w-3 h-3" />
+      {label}
+    </span>
+  );
 
-    if (allSelected) {
-      setSelectedCustomers((prev) => prev.filter((id) => !ids.includes(id)));
+  /* Fungsi untuk mendapatkan badge status pengiriman per pesan */
+  function getStatusBadge(status) {
+    const normalized = status?.toLowerCase();
+
+    const badges = {
+      pending: {
+        color: "bg-slate-100 text-slate-700",
+        icon: Clock,
+        label: "Pending",
+      },
+      sent: {
+        color: "bg-green-50 text-green-700",
+        icon: CheckCircle,
+        label: "Terkirim",
+      },
+      failed: {
+        color: "bg-red-50 text-red-700",
+        icon: XCircle,
+        label: "Gagal",
+      },
+    };
+
+    // Tentukan badge yang sesuai, default ke Pending
+    const badge = badges[normalized] || badges["pending"];
+
+    return (
+      <StatusBadge color={badge.color} Icon={badge.icon} label={badge.label} />
+    );
+  }
+
+  /* Fungsi untuk mendapatkan badge status per blast */
+  function getAggregateBadge(b) {
+    const { sent = 0, failed = 0, pending = 0, total_penerima = 0 } = b;
+
+    let badge = {};
+
+    if (pending > 0) {
+      // Masih ada yang dalam antrian
+      badge = {
+        color: "bg-sky-50 text-sky-700",
+        icon: Clock,
+        label: "Sedang dikirim",
+      };
+    } else if (sent === total_penerima) {
+      // Semua terkirim
+      badge = {
+        color: "bg-green-50 text-green-700",
+        icon: CheckCircle,
+        label: "Terkirim sempurna",
+      };
+    } else if (failed === total_penerima) {
+      // Semua gagal
+      badge = {
+        color: "bg-red-50 text-red-700",
+        icon: XCircle,
+        label: "Gagal",
+      };
     } else {
-      setSelectedCustomers((prev) => Array.from(new Set([...prev, ...ids])));
+      // Campuran (terkirim sebagian, gagal sebagian)
+      badge = {
+        color: "bg-amber-50 text-amber-700",
+        icon: AlertTriangle,
+        label: "Terkirim, beberapa gagal",
+      };
     }
-  };
 
-  // Fetch pelanggan
+    return (
+      <StatusBadge color={badge.color} Icon={badge.icon} label={badge.label} />
+    );
+  }
+
+  // ===============================================
+  // 5. SIDE EFFECTS / useEffect (Data Fetching & Polling)
+  // ===============================================
+
+  /* Fetch data pelanggan */
   useEffect(() => {
     const fetchCustomers = async () => {
       try {
@@ -186,7 +286,7 @@ export default function WaBlast() {
         // Filter yang punya nomor telepon
         const withPhone = pelangganRes.filter((pelanggan) => pelanggan.telepon);
 
-        // Simpan ke state
+        // Simpan ke state dan pilih semua secara default
         setCustomers(withPhone);
 
         // Pilih semua secara default
@@ -202,7 +302,7 @@ export default function WaBlast() {
     fetchCustomers();
   }, []);
 
-  // fetch stats
+  /* Polling statistik blast (setiap 5 detik) */
   useEffect(() => {
     const fetchBlastStats = async () => {
       try {
@@ -210,7 +310,7 @@ export default function WaBlast() {
         setStatistics(blastStats);
       } catch (error) {
         console.log("Gagal mengambil statistics: ", error);
-        toast.error("Gagal mengambil statistik");
+        // toast.error("Gagal mengambil statistik");
       }
     };
 
@@ -220,7 +320,7 @@ export default function WaBlast() {
     return () => clearInterval(interval);
   }, []);
 
-  // Check device status
+  /* Polling status koneksi device WhatsApp (setiap 5 detik) */
   useEffect(() => {
     let isMounted = true;
     const checkStatus = async () => {
@@ -249,7 +349,52 @@ export default function WaBlast() {
     };
   }, []);
 
-  //Connect Device WhatsApp
+  /* Load broadcast logs */
+  useEffect(() => {
+    loadBroadcasts();
+  }, []);
+
+  /* Cleanup Gambar */
+  useEffect(() => {
+    return () => {
+      if (form.gambarPreviewUrl) URL.revokeObjectURL(form.gambarPreviewUrl);
+    };
+  }, [form.gambarPreviewUrl]);
+
+  // ===============================================
+  // 6. EVENT HANDLERS & API CALLS
+  // ===============================================
+
+  /* Load broadcast logs dari API */
+  async function loadBroadcasts() {
+    try {
+      const response = await waBlastService.getLogs();
+      console.log(response.data);
+      setBroadcasts(response.data || []);
+    } catch (error) {
+      console.error("Failed to load broadcasts:", error);
+      toast.error("Gagal memuat broadcast logs");
+    }
+  }
+  
+  /* Buka modal detail log per nomor */
+  async function openDetails(broadcastId) {
+    setLoadingDetails(true);
+    setBroadcastModalOpen(true);
+
+    try {
+      const logs = await waBlastService.getBroadcastDetails(broadcastId);
+      setDetails(logs);
+    } catch (err) {
+      console.error("Failed to load broadcast details:", err);
+      toast.error("Gagal memuat detail broadcast");
+      setDetails([]);
+    } finally {
+      setLoadingDetails(false);
+    }
+  }
+
+  /* Koneksi device WhatsApp (QR) */
   async function connectDevice() {
     setConnecting(true);
     try {
@@ -269,7 +414,7 @@ export default function WaBlast() {
     }
   }
 
-  // Disconnect function
+  /* Disconnect device WhatsApp */
   async function disconnectDevice() {
     setConnecting(true);
     try {
@@ -286,7 +431,7 @@ export default function WaBlast() {
     }
   }
 
-  // img handler
+  /* Handler perubahan file gambar & upload ke server */
   const handleImageChange = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -298,10 +443,12 @@ export default function WaBlast() {
     setUploadingImage(true);
     try {
       const uploadedUrl = await waBlastService.uploadImage(file);
+      // Simpan URL dari server
       setForm((f) => ({ ...f, media_url: uploadedUrl, inputKey: Date.now() }));
     } catch (err) {
       console.error("Upload gagal:", err);
       toast.error("Gagal upload gambar");
+      // Reset form jika upload gagal
       setForm((f) => ({
         ...f,
         gambar: null,
@@ -314,6 +461,7 @@ export default function WaBlast() {
     }
   };
 
+  /* Handler cancel dan hapus gambar yang di upload */
   const removeImage = () => {
     if (form.gambarPreviewUrl) {
       URL.revokeObjectURL(form.gambarPreviewUrl);
@@ -322,54 +470,17 @@ export default function WaBlast() {
       ...f,
       gambar: null,
       gambarPreviewUrl: null,
+      media_url: null,
       inputKey: Date.now(),
     }));
   };
 
-  useEffect(() => {
-    return () => {
-      if (form.gambarPreviewUrl) URL.revokeObjectURL(form.gambarPreviewUrl);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // load broadcast logs
-  async function loadBroadcasts() {
-    try {
-      const response = await waBlastService.getLogs();
-      console.log(response.data);
-      setBroadcasts(response.data || []);
-    } catch (error) {
-      console.error("Failed to load broadcasts:", error);
-      toast.error("Gagal memuat broadcast logs");
-    }
-  }
-
-  useEffect(() => {
-    loadBroadcasts();
-  }, []);
-
-  // broadcast logs per nomor
-  async function openDetails(broadcastId) {
-    setLoadingDetails(true);
-    setBroadcastModalOpen(true);
-
-    try {
-      const logs = await waBlastService.getBroadcastDetails(broadcastId);
-      setDetails(logs);
-    } catch (err) {
-      console.error("Failed to load broadcast details:", err);
-      toast.error("Gagal memuat detail broadcast");
-      setDetails([]);
-    } finally {
-      setLoadingDetails(false);
-    }
-  }
-
+  /* Handler perubahan input form */
   function handleChange(e) {
     setForm({ ...form, [e.target.name]: e.target.value });
   }
 
+  /* Insert placeholder variable ke textarea */
   function insertPlaceholder(placeholder) {
     const textarea = textareaRef.current;
     if (!textarea) return;
@@ -403,6 +514,7 @@ export default function WaBlast() {
     }, 50);
   }
 
+  /* Toggle select pelanggan per ID */
   function toggleCustomer(customerId) {
     setSelectedCustomers((prev) =>
       prev.includes(customerId)
@@ -411,7 +523,22 @@ export default function WaBlast() {
     );
   }
 
-  //send blast function
+  /* Select/Deselect semua pelanggan berdasarkan level */
+  const selectByLevel = (level) => {
+    const ids = processedCustomers
+      .filter((pelanggan) => pelanggan.level === level)
+      .map((pelanggan) => pelanggan.pelanggan_id);
+
+    const allSelected = ids.every((id) => selectedCustomers.includes(id));
+
+    if (allSelected) {
+      setSelectedCustomers((prev) => prev.filter((id) => !ids.includes(id)));
+    } else {
+      setSelectedCustomers((prev) => Array.from(new Set([...prev, ...ids])));
+    }
+  };
+
+  /* Mengirim pesan blast ke semua pelanggan terpilih */
   const sendBlast = async () => {
     if (!form.judul_pesan || !form.isi_pesan) {
       alert("Judul dan isi pesan wajib diisi!");
@@ -419,6 +546,7 @@ export default function WaBlast() {
     }
 
     setLoading(true);
+    // Gabungkan judul dan isi pesan
     const fullMessage = `${form.judul_pesan}\n\n${form.isi_pesan}`;
 
     try {
@@ -429,6 +557,7 @@ export default function WaBlast() {
       });
 
       toast.success(res.message || "Pesan berhasil dikirim!");
+      // Reset form setelah sukses
       setForm({
         judul_pesan: "",
         isi_pesan: "",
@@ -446,76 +575,6 @@ export default function WaBlast() {
       setLoading(false);
     }
   };
-
-  // eslint-disable-next-line no-unused-vars
-  const StatusBadge = ({ color, Icon, label }) => (
-    <span
-      className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${color}`}
-    >
-      <Icon className="w-3 h-3" />
-      {label}
-    </span>
-  );
-
-  function getStatusBadge(status) {
-    const normalized = status?.toLowerCase();
-
-    const badges = {
-      pending: {
-        color: "bg-slate-100 text-slate-700",
-        icon: Clock,
-        label: "Pending",
-      },
-      sent: {
-        color: "bg-green-50 text-green-700",
-        icon: CheckCircle,
-        label: "Terkirim",
-      },
-      failed: {
-        color: "bg-red-50 text-red-700",
-        icon: XCircle,
-        label: "Gagal",
-      },
-    };
-
-    const badge = badges[normalized] || badges["pending"];
-
-    return <StatusBadge color={badge.color} Icon={badge.icon} label={badge.label} />;
-  }
-
-  function getAggregateBadge(b) {
-    const { sent = 0, failed = 0, pending = 0, total_penerima = 0 } = b;
-
-    let badge = {};
-
-    if (pending > 0) {
-      badge = {
-        color: "bg-sky-50 text-sky-700",
-        icon: Clock,
-        label: "Sedang dikirim",
-      };
-    } else if (sent === total_penerima) {
-      badge = {
-        color: "bg-green-50 text-green-700",
-        icon: CheckCircle,
-        label: "Terkirim sempurna",
-      };
-    } else if (failed === total_penerima) {
-      badge = {
-        color: "bg-red-50 text-red-700",
-        icon: XCircle,
-        label: "Gagal",
-      };
-    } else {
-      badge = {
-        color: "bg-amber-50 text-amber-700",
-        icon: AlertTriangle,
-        label: "Terkirim, beberapa gagal",
-      };
-    }
-
-    return <StatusBadge color={badge.color} Icon={badge.icon} label={badge.label} />;
-  }
 
   return (
     <div className="space-y-6">
