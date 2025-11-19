@@ -1,25 +1,11 @@
-import React, { useMemo, useEffect, useState, useRef } from "react";
-import {
-  Send,
-  Users,
-  Eye,
-  MessageSquare,
-  Wifi,
-  WifiOff,
-  CheckCircle,
-  Clock,
-  XCircle,
-  User,
-  Phone,
-  Mail,
-  FileText,
-  Copy,
-  ChevronDown,
-  AlertTriangle,
-} from "lucide-react";
+import { useEffect, useState, useRef } from "react";
+import { Wifi, WifiOff, Users, ChevronDown, FileText, Copy, MessageSquare, User, Phone, Mail, Send, Eye, } from "lucide-react";
 import { toast } from "react-toastify";
 import { waBlastService } from "../../services/WaBlastApi";
-import QRCode from "react-qr-code";
+import QrModal from "../../components/QrModal";
+import CustomerSelectionModal from "../../components/CustomerSelectionModal";
+import { AggregateStatusBadge } from "../../utils/StatusBadge";
+import BroadcastDetailModal from "../../components/BroadcastDetailModal";
 
 export default function WaBlast() {
   // ===============================================
@@ -57,15 +43,10 @@ export default function WaBlast() {
 
   // === 4. MODAL & LOG DETAIL BLAST ===
   const [broadcastModalOpen, setBroadcastModalOpen] = useState(false);
-  const [details, setDetails] = useState([]);
-  const [loadingDetails, setLoadingDetails] = useState(false);
+  const [selectedBroadcastId, setSelectedBroadcastId] = useState(null);
 
-  // === 5. CUSTOMER PICKER MODAL (FILTER & SORT) ===
-  const [showCustomerPicker, setShowCustomerPicker] = useState(false);
-  const [search, setSearch] = useState("");
-  const [activeLevel, setActiveLevel] = useState("ALL");
-  const [sortName, setSortName] = useState("asc");
-  const [sortLevel, setSortLevel] = useState(null);
+  // === 5. CUSTOMER SELECTION MODAL (FILTER & SORT) ===
+  const [showCustomerSelection, setShowCustomerSelection] = useState(false);
 
   // ===============================================
   // 2. STATIC DATA
@@ -140,141 +121,7 @@ export default function WaBlast() {
   ];
 
   // ===============================================
-  // 3. DERIVED STATES / useMemo
-  // ===============================================
-
-  /* Mendapatkan daftar level unik dari pelanggan */
-  const uniqueLevels = useMemo(() => {
-    // Menghitung daftar level unik hanya saat 'customers' berubah
-    return [...new Set(customers.map((pelanggan) => pelanggan.level))];
-  }, [customers]);
-
-  // Menyiapkan array level untuk filter (termasuk opsi "ALL") dan tombol pilih cepat
-  const allLevels = ["ALL", ...uniqueLevels];
-  const selectableLevels = uniqueLevels;
-
-  /* Memproses pelanggan: Filtering (Pencarian & Level) dan Sorting */
-  const processedCustomers = useMemo(() => {
-    const levelOrder = { Bronze: 1, Silver: 2, Gold: 3, Platinum: 4 };
-
-    // 1. Filtering: Menerapkan pencarian nama/telepon dan filter level aktif
-    const filtered = customers.filter((pelanggan) => {
-      const matchesSearch =
-        pelanggan.nama.toLowerCase().includes(search.toLowerCase()) ||
-        pelanggan.telepon.includes(search);
-
-      const matchesLevel =
-        activeLevel === "ALL" ? true : pelanggan.level === activeLevel;
-
-      return matchesSearch && matchesLevel;
-    });
-
-    // 2. Sorting: Mengurutkan berdasarkan Level, kemudian Nama
-    return [...filtered].sort((a, b) => {
-      // Urutkan berdasarkan level jika sortLevel aktif
-      if (sortLevel) {
-        const levelDiff =
-          sortLevel === "asc"
-            ? levelOrder[a.level] - levelOrder[b.level]
-            : levelOrder[b.level] - levelOrder[a.level];
-        if (levelDiff !== 0) return levelDiff;
-      }
-
-      // Urutkan berdasarkan nama
-      return sortName === "asc"
-        ? a.nama.localeCompare(b.nama)
-        : b.nama.localeCompare(a.nama);
-    });
-  }, [customers, search, activeLevel, sortName, sortLevel]);
-
-  // ===============================================
-  // 4. UTILITY FUNCTIONS (Non-Event Handler/Non-Hook)
-  // ===============================================
-
-  /* Komponen mikro untuk menampilkan badge status*/
-  // eslint-disable-next-line no-unused-vars
-  const StatusBadge = ({ color, Icon, label }) => (
-    <span
-      className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${color}`}
-    >
-      <Icon className="w-3 h-3" />
-      {label}
-    </span>
-  );
-
-  /* Fungsi untuk mendapatkan badge status pengiriman per pesan */
-  function getStatusBadge(status) {
-    const normalized = status?.toLowerCase();
-
-    const badges = {
-      pending: {
-        color: "bg-slate-100 text-slate-700",
-        icon: Clock,
-        label: "Pending",
-      },
-      sent: {
-        color: "bg-green-50 text-green-700",
-        icon: CheckCircle,
-        label: "Terkirim",
-      },
-      failed: {
-        color: "bg-red-50 text-red-700",
-        icon: XCircle,
-        label: "Gagal",
-      },
-    };
-
-    // Tentukan badge yang sesuai, default ke Pending
-    const badge = badges[normalized] || badges["pending"];
-
-    return (
-      <StatusBadge color={badge.color} Icon={badge.icon} label={badge.label} />
-    );
-  }
-
-  /* Fungsi untuk mendapatkan badge status per blast */
-  function getAggregateBadge(b) {
-    const { sent = 0, failed = 0, pending = 0, total_penerima = 0 } = b;
-
-    let badge = {};
-
-    if (pending > 0) {
-      // Masih ada yang dalam antrian
-      badge = {
-        color: "bg-sky-50 text-sky-700",
-        icon: Clock,
-        label: "Sedang dikirim",
-      };
-    } else if (sent === total_penerima) {
-      // Semua terkirim
-      badge = {
-        color: "bg-green-50 text-green-700",
-        icon: CheckCircle,
-        label: "Terkirim sempurna",
-      };
-    } else if (failed === total_penerima) {
-      // Semua gagal
-      badge = {
-        color: "bg-red-50 text-red-700",
-        icon: XCircle,
-        label: "Gagal",
-      };
-    } else {
-      // Campuran (terkirim sebagian, gagal sebagian)
-      badge = {
-        color: "bg-amber-50 text-amber-700",
-        icon: AlertTriangle,
-        label: "Terkirim, beberapa gagal",
-      };
-    }
-
-    return (
-      <StatusBadge color={badge.color} Icon={badge.icon} label={badge.label} />
-    );
-  }
-
-  // ===============================================
-  // 5. SIDE EFFECTS / useEffect (Data Fetching & Polling)
+  // 3. SIDE EFFECTS / useEffect (Data Fetching & Polling)
   // ===============================================
 
   /* Fetch data pelanggan */
@@ -362,36 +209,24 @@ export default function WaBlast() {
   }, [form.gambarPreviewUrl]);
 
   // ===============================================
-  // 6. EVENT HANDLERS & API CALLS
+  // 4. EVENT HANDLERS & API CALLS
   // ===============================================
 
   /* Load broadcast logs dari API */
   async function loadBroadcasts() {
     try {
       const response = await waBlastService.getLogs();
-      console.log(response.data);
       setBroadcasts(response.data || []);
     } catch (error) {
       console.error("Failed to load broadcasts:", error);
       toast.error("Gagal memuat broadcast logs");
     }
   }
-  
-  /* Buka modal detail log per nomor */
-  async function openDetails(broadcastId) {
-    setLoadingDetails(true);
-    setBroadcastModalOpen(true);
 
-    try {
-      const logs = await waBlastService.getBroadcastDetails(broadcastId);
-      setDetails(logs);
-    } catch (err) {
-      console.error("Failed to load broadcast details:", err);
-      toast.error("Gagal memuat detail broadcast");
-      setDetails([]);
-    } finally {
-      setLoadingDetails(false);
-    }
+  /* Buka modal detail log per pesan */
+  function openDetails(broadcastId) {
+    setSelectedBroadcastId(broadcastId);
+    setBroadcastModalOpen(true);
   }
 
   /* Koneksi device WhatsApp (QR) */
@@ -514,30 +349,6 @@ export default function WaBlast() {
     }, 50);
   }
 
-  /* Toggle select pelanggan per ID */
-  function toggleCustomer(customerId) {
-    setSelectedCustomers((prev) =>
-      prev.includes(customerId)
-        ? prev.filter((id) => id !== customerId)
-        : [...prev, customerId]
-    );
-  }
-
-  /* Select/Deselect semua pelanggan berdasarkan level */
-  const selectByLevel = (level) => {
-    const ids = processedCustomers
-      .filter((pelanggan) => pelanggan.level === level)
-      .map((pelanggan) => pelanggan.pelanggan_id);
-
-    const allSelected = ids.every((id) => selectedCustomers.includes(id));
-
-    if (allSelected) {
-      setSelectedCustomers((prev) => prev.filter((id) => !ids.includes(id)));
-    } else {
-      setSelectedCustomers((prev) => Array.from(new Set([...prev, ...ids])));
-    }
-  };
-
   /* Mengirim pesan blast ke semua pelanggan terpilih */
   const sendBlast = async () => {
     if (!form.judul_pesan || !form.isi_pesan) {
@@ -602,32 +413,15 @@ export default function WaBlast() {
               ? "Disconnect Device"
               : "Connect Device"}
           </button>
-          {/* QR Modal */}
           {isQrModalOpen && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-              <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 w-80 max-w-[90%] relative flex flex-col items-center">
-                <button
-                  onClick={() => setIsQrModalOpen(false)}
-                  className="absolute top-3 right-3 text-slate-400 hover:text-slate-600"
-                >
-                  <XCircle className="w-5 h-5" />
-                </button>
-                <h4 className="flex items-center gap-2 mb-4 font-semibold text-center text-slate-900">
-                  <Wifi className="w-5 h-5 text-sky-600" />
-                  Scan QR untuk Connect
-                </h4>
-                {qrValue ? (
-                  <QRCode value={qrValue} size={180} />
-                ) : (
-                  <p className="text-sm text-slate-500">Memuat QR...</p>
-                )}
-                <p className="mt-4 text-xs text-center text-slate-400">
-                  Buka WhatsApp di HP dan scan QR untuk menghubungkan device.
-                </p>
-              </div>
-            </div>
+            <QrModal
+              qrCodeValue={qrValue}
+              onClose={() => {
+                setIsQrModalOpen(false);
+                setQrValue("");
+              }}
+            />
           )}
-
           <div className="flex items-center gap-2 text-sm">
             {deviceStatus.loading ? (
               <span className="text-slate-400">Checking...</span>
@@ -647,7 +441,7 @@ export default function WaBlast() {
           </div>
           <div
             className="flex items-center gap-2 px-2 py-1 text-sm rounded cursor-pointer text-slate-600 hover:bg-slate-100"
-            onClick={() => setShowCustomerPicker(true)}
+            onClick={() => setShowCustomerSelection(true)}
           >
             <Users className="w-4 h-4" />
             <span>
@@ -657,218 +451,13 @@ export default function WaBlast() {
           </div>
 
           {/*Pilih Pelanggan Modal*/}
-          {showCustomerPicker && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-              <div
-                className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 w-96 max-w-[90%] flex flex-col"
-                onClick={(e) => e.stopPropagation()}
-              >
-                {/* Header */}
-                <h4 className="flex items-center gap-2 mb-4 font-semibold text-slate-900">
-                  <Users className="w-5 h-5 text-sky-600" />
-                  Pilih Pelanggan
-                </h4>
-
-                {/* Search Bar */}
-                <input
-                  type="text"
-                  placeholder="Cari nama atau nomor..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="w-full px-3 py-2 mb-3 text-sm border rounded-lg border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-400"
-                />
-
-                {/* Level Filter */}
-                <h5 className="text-xs font-semibold text-slate-900">Filter</h5>
-                <div
-                  className={`flex mb-3 overflow-x-auto ${
-                    allLevels.length <= 3
-                      ? "justify-start gap-4"
-                      : allLevels.length === 4
-                      ? "justify-start gap-2"
-                      : "justify-between"
-                  }`}
-                >
-                  {allLevels.map((level) => (
-                    <button
-                      key={level}
-                      onClick={() => setActiveLevel(level)}
-                      className={`px-3 py-1 text-xs rounded-full border ${
-                        activeLevel === level
-                          ? "bg-gradient-to-r from-sky-500 to-sky-600 text-white"
-                          : "border-slate-300 text-slate-600 hover:bg-slate-100"
-                      }`}
-                    >
-                      {level}
-                    </button>
-                  ))}
-                </div>
-
-                {/* Sorting */}
-                <h5 className="text-xs font-semibold text-slate-900">
-                  Urutkan
-                </h5>
-
-                <div className="flex justify-between gap-4">
-                  {/* Nama */}
-                  <div className="flex gap-2 mb-2 overflow-x-auto">
-                    {[
-                      { value: "asc", label: "Nama A–Z" },
-                      { value: "desc", label: "Nama Z–A" },
-                    ].map((opt) => (
-                      <button
-                        key={opt.value}
-                        onClick={() => setSortName(opt.value)}
-                        className={`px-3 py-1 text-xs rounded-full border whitespace-nowrap ${
-                          sortName === opt.value
-                            ? "bg-gradient-to-r from-sky-500 to-sky-600 text-white"
-                            : "border-slate-300 text-slate-600 hover:bg-slate-100"
-                        }`}
-                      >
-                        {opt.label}
-                      </button>
-                    ))}
-                  </div>
-
-                  {/* Level */}
-                  <div className="flex gap-2 mb-3 overflow-x-auto">
-                    {[
-                      { value: "asc", label: "Level ↑" },
-                      { value: "desc", label: "Level ↓" },
-                    ].map((opt) => (
-                      <button
-                        key={opt.value}
-                        onClick={() => setSortLevel(opt.value)}
-                        className={`px-3 py-1 text-xs rounded-full border whitespace-nowrap ${
-                          sortLevel === opt.value
-                            ? "bg-gradient-to-r from-sky-500 to-sky-600 text-white"
-                            : "border-slate-300 text-slate-600 hover:bg-slate-100"
-                        }`}
-                      >
-                        {opt.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Toggle Select Buttons */}
-                <h5 className="text-xs font-semibold text-slate-900">
-                  Pilih cepat
-                </h5>
-                <div className="flex gap-2 px-1 mb-2 overflow-x-auto">
-                  {/* Select All / Deselect All */}
-                  <button
-                    onClick={() => {
-                      if (
-                        selectedCustomers.length === processedCustomers.length
-                      ) {
-                        setSelectedCustomers([]);
-                      } else {
-                        setSelectedCustomers(
-                          processedCustomers.map((c) => c.pelanggan_id)
-                        );
-                      }
-                    }}
-                    className={`px-3 py-1 text-xs rounded-full border whitespace-nowrap ${
-                      selectedCustomers.length === processedCustomers.length
-                        ? "bg-gradient-to-r from-sky-500 to-sky-600 text-white "
-                        : "bg-gray-100 text-slate-700 border-slate-300 hover:bg-slate-200"
-                    }`}
-                  >
-                    Select All
-                  </button>
-
-                  {/* Select by Level */}
-                  {selectableLevels.map((level) => {
-                    const levelCustomers = processedCustomers.filter(
-                      (c) => c.level === level
-                    );
-
-                    const isLevelSelected =
-                      levelCustomers.length > 0 &&
-                      levelCustomers.every((c) =>
-                        selectedCustomers.includes(c.pelanggan_id)
-                      );
-
-                    return (
-                      <button
-                        key={level}
-                        onClick={() => selectByLevel(level)}
-                        className={`px-3 py-1 text-xs rounded-full border whitespace-nowrap ${
-                          isLevelSelected
-                            ? "bg-gradient-to-r from-sky-500 to-sky-600 hover:brightness-110 text-white"
-                            : "bg-gray-100 text-slate-700 border-slate-300 hover:bg-slate-200"
-                        }`}
-                      >
-                        {level}
-                      </button>
-                    );
-                  })}
-                </div>
-
-                {/* List */}
-                <div className="flex flex-col space-y-2 overflow-y-auto max-h-[45vh]">
-                  {processedCustomers.map((cust) => (
-                    <label
-                      key={cust.pelanggan_id}
-                      className="flex items-center justify-between p-2 rounded hover:bg-slate-50"
-                    >
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="checkbox"
-                          checked={selectedCustomers.includes(
-                            cust.pelanggan_id
-                          )}
-                          onChange={() => toggleCustomer(cust.pelanggan_id)}
-                        />
-
-                        <div className="flex flex-col leading-tight">
-                          <span className="text-sm font-medium">
-                            {cust.nama}
-                          </span>
-                          <span className="text-[10px] text-slate-500">
-                            {cust.telepon || "-"}
-                          </span>
-                        </div>
-                      </div>
-
-                      <span
-                        className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                          cust.level === "Platinum"
-                            ? "bg-purple-100 text-purple-700"
-                            : cust.level === "Gold"
-                            ? "bg-yellow-100 text-yellow-700"
-                            : cust.level === "Silver"
-                            ? "bg-slate-100 text-slate-700"
-                            : "bg-orange-100 text-orange-700"
-                        }`}
-                      >
-                        {cust.level}
-                      </span>
-                    </label>
-                  ))}
-                  {processedCustomers.length === 0 && (
-                    <p className="py-4 text-xs text-center text-slate-400">
-                      Tidak ada pelanggan
-                    </p>
-                  )}
-                </div>
-
-                {/* Footer */}
-                <div className="flex items-center justify-between mt-4">
-                  <span className="text-xs text-slate-400">
-                    Terpilih: {selectedCustomers.length}
-                  </span>
-
-                  <button
-                    className="px-3 py-1 text-sm text-white rounded bg-gradient-to-r from-sky-500 to-sky-600"
-                    onClick={() => setShowCustomerPicker(false)}
-                  >
-                    Selesai
-                  </button>
-                </div>
-              </div>
-            </div>
+          {showCustomerSelection && (
+            <CustomerSelectionModal
+              customers={customers}
+              selectedCustomers={selectedCustomers}
+              setSelectedCustomers={setSelectedCustomers}
+              onClose={() => setShowCustomerSelection(false)}
+            />
           )}
         </div>
       </div>
@@ -1198,7 +787,9 @@ export default function WaBlast() {
                     </td>
                     <td className="py-3 text-slate-600">{b.sent || 0}</td>
                     <td className="py-3 text-slate-600">{b.failed || 0}</td>
-                    <td className="py-3">{getAggregateBadge(b)}</td>
+                    <td className="py-3">
+                      <AggregateStatusBadge broadcast={b} />
+                    </td>
                     <td className="py-3">
                       {b.media_url ? (
                         <button
@@ -1226,66 +817,16 @@ export default function WaBlast() {
           </div>
         )}
         {/* Broadcast Detail Modal */}
-        {broadcastModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30">
-            <div className="w-11/12 max-w-2xl p-6 bg-white shadow-lg rounded-xl">
-              <div className="flex items-center justify-between mb-4">
-                <h4 className="font-semibold text-slate-900">
-                  Detail Broadcast
-                </h4>
-                <button
-                  onClick={() => setBroadcastModalOpen(false)}
-                  className="text-xl font-bold text-red-500"
-                >
-                  ✕
-                </button>
-              </div>
-
-              {loadingDetails ? (
-                <p className="py-4 text-center text-slate-400">Loading...</p>
-              ) : details.length === 0 ? (
-                <p className="py-4 text-center text-slate-400">
-                  Belum ada riwayat penerima
-                </p>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b border-slate-200">
-                        <th className="pb-2 text-left text-slate-700">
-                          Nomor HP
-                        </th>
-                        <th className="pb-2 text-left text-slate-700">
-                          Status
-                        </th>
-                        <th className="pb-2 text-left text-slate-700">Error</th>
-                        <th className="pb-2 text-left text-slate-700">Pesan</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100">
-                      {details.map((d, i) => (
-                        <tr key={i} className="hover:bg-slate-50">
-                          <td className="py-2 text-slate-600">
-                            {d.phone_number}
-                          </td>
-                          <td className="py-2">{getStatusBadge(d.status)}</td>
-                          <td className="py-2 text-red-600">
-                            {d.error || "-"}
-                          </td>
-                          <td
-                            className="max-w-xs py-2 truncate text-slate-600"
-                            title={d.message}
-                          >
-                            {d.message}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </div>
-          </div>
+        {broadcastModalOpen && selectedBroadcastId && (
+          <BroadcastDetailModal
+            // Pass ID broadcast yang ingin dimuat datanya
+            broadcastId={selectedBroadcastId}
+            // Pass handler untuk menutup modal
+            onClose={() => {
+              setBroadcastModalOpen(false);
+              setSelectedBroadcastId(null);
+            }}
+          />
         )}
       </div>
     </div>
