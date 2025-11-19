@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useMemo, useEffect, useState, useRef } from "react";
 import {
   Send,
   Users,
@@ -122,57 +122,57 @@ export default function WaBlast() {
     },
   ];
 
-  // filtering pelanggan
-  const allLevels = [
-    "ALL",
-    ...new Set(customers.map((pelanggan) => pelanggan.level)),
-  ];
+  const uniqueLevels = useMemo(() => {
+    // Menghitung daftar level unik hanya saat 'customers' berubah
+    return [...new Set(customers.map((pelanggan) => pelanggan.level))];
+  }, [customers]);
 
-  const filteredCustomers = customers.filter((pelanggan) => {
-    const matchesSearch =
-      pelanggan.nama.toLowerCase().includes(search.toLowerCase()) ||
-      pelanggan.telepon.includes(search);
+  const allLevels = ["ALL", ...uniqueLevels];
+  const selectableLevels = uniqueLevels;
 
-    const matchesLevel =
-      activeLevel === "ALL" ? true : pelanggan.level === activeLevel;
+  const processedCustomers = useMemo(() => {
+    const levelOrder = { Bronze: 1, Silver: 2, Gold: 3, Platinum: 4 };
+    // 1. Filtering
+    const filtered = customers.filter((pelanggan) => {
+      const matchesSearch =
+        pelanggan.nama.toLowerCase().includes(search.toLowerCase()) ||
+        pelanggan.telepon.includes(search);
 
-    return matchesSearch && matchesLevel;
-  });
+      const matchesLevel =
+        activeLevel === "ALL" ? true : pelanggan.level === activeLevel;
 
-  // sorting pelanggan
-  const levelOrder = { Bronze: 1, Silver: 2, Gold: 3, Platinum: 4 };
+      return matchesSearch && matchesLevel;
+    });
 
-  const sortedCustomers = [...filteredCustomers].sort((a, b) => {
-    // sort by level
-    if (sortLevel) {
-      const levelDiff =
-        sortLevel === "asc"
-          ? levelOrder[a.level] - levelOrder[b.level]
-          : levelOrder[b.level] - levelOrder[a.level];
-      if (levelDiff !== 0) return levelDiff; // kalo beda, pakai level
-    }
+    // 2. Sorting
+    return [...filtered].sort((a, b) => {
+      // sort by level
+      if (sortLevel) {
+        const levelDiff =
+          sortLevel === "asc"
+            ? levelOrder[a.level] - levelOrder[b.level]
+            : levelOrder[b.level] - levelOrder[a.level];
+        if (levelDiff !== 0) return levelDiff;
+      }
 
-    // sort by nama
-    return sortName === "asc"
-      ? a.nama.localeCompare(b.nama)
-      : b.nama.localeCompare(a.nama);
-  });
+      // sort by nama
+      return sortName === "asc"
+        ? a.nama.localeCompare(b.nama)
+        : b.nama.localeCompare(a.nama);
+    });
+  }, [customers, search, activeLevel, sortName, sortLevel]);
 
   // toggle select
-  const Levels = [...new Set(customers.map((pelanggan) => pelanggan.level))];
   const selectByLevel = (level) => {
-    const ids = filteredCustomers
+    const ids = processedCustomers
       .filter((pelanggan) => pelanggan.level === level)
       .map((pelanggan) => pelanggan.pelanggan_id);
 
-    // cek apakah semua id level ini sudah terpilih
     const allSelected = ids.every((id) => selectedCustomers.includes(id));
 
     if (allSelected) {
-      // deselect level ini
       setSelectedCustomers((prev) => prev.filter((id) => !ids.includes(id)));
     } else {
-      // select level ini
       setSelectedCustomers((prev) => Array.from(new Set([...prev, ...ids])));
     }
   };
@@ -447,6 +447,16 @@ export default function WaBlast() {
     }
   };
 
+  // eslint-disable-next-line no-unused-vars
+  const StatusBadge = ({ color, Icon, label }) => (
+    <span
+      className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${color}`}
+    >
+      <Icon className="w-3 h-3" />
+      {label}
+    </span>
+  );
+
   function getStatusBadge(status) {
     const normalized = status?.toLowerCase();
 
@@ -469,16 +479,8 @@ export default function WaBlast() {
     };
 
     const badge = badges[normalized] || badges["pending"];
-    const Icon = badge.icon;
 
-    return (
-      <span
-        className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${badge.color}`}
-      >
-        <Icon className="w-3 h-3" />
-        {badge.label}
-      </span>
-    );
+    return <StatusBadge color={badge.color} Icon={badge.icon} label={badge.label} />;
   }
 
   function getAggregateBadge(b) {
@@ -512,15 +514,7 @@ export default function WaBlast() {
       };
     }
 
-    const Icon = badge.icon;
-    return (
-      <span
-        className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${badge.color}`}
-      >
-        <Icon className="w-3 h-3" />
-        {badge.label}
-      </span>
-    );
+    return <StatusBadge color={badge.color} Icon={badge.icon} label={badge.label} />;
   }
 
   return (
@@ -627,7 +621,15 @@ export default function WaBlast() {
 
                 {/* Level Filter */}
                 <h5 className="text-xs font-semibold text-slate-900">Filter</h5>
-                <div className="flex justify-between mb-3 overflow-x-auto">
+                <div
+                  className={`flex mb-3 overflow-x-auto ${
+                    allLevels.length <= 3
+                      ? "justify-start gap-4"
+                      : allLevels.length === 4
+                      ? "justify-start gap-2"
+                      : "justify-between"
+                  }`}
+                >
                   {allLevels.map((level) => (
                     <button
                       key={level}
@@ -698,16 +700,18 @@ export default function WaBlast() {
                   {/* Select All / Deselect All */}
                   <button
                     onClick={() => {
-                      if (selectedCustomers.length === sortedCustomers.length) {
+                      if (
+                        selectedCustomers.length === processedCustomers.length
+                      ) {
                         setSelectedCustomers([]);
                       } else {
                         setSelectedCustomers(
-                          sortedCustomers.map((c) => c.pelanggan_id)
+                          processedCustomers.map((c) => c.pelanggan_id)
                         );
                       }
                     }}
                     className={`px-3 py-1 text-xs rounded-full border whitespace-nowrap ${
-                      selectedCustomers.length === sortedCustomers.length
+                      selectedCustomers.length === processedCustomers.length
                         ? "bg-gradient-to-r from-sky-500 to-sky-600 text-white "
                         : "bg-gray-100 text-slate-700 border-slate-300 hover:bg-slate-200"
                     }`}
@@ -716,28 +720,36 @@ export default function WaBlast() {
                   </button>
 
                   {/* Select by Level */}
-                  {Levels.map((level) => (
-                    <button
-                      key={level}
-                      onClick={() => selectByLevel(level)}
-                      className={`px-3 py-1 text-xs rounded-full border whitespace-nowrap ${
-                        sortedCustomers
-                          .filter((c) => c.level === level)
-                          .every((c) =>
-                            selectedCustomers.includes(c.pelanggan_id)
-                          )
-                          ? "bg-gradient-to-r from-sky-500 to-sky-600 hover:brightness-110 text-white"
-                          : "bg-gray-100 text-slate-700 border-slate-300 hover:bg-slate-200"
-                      }`}
-                    >
-                      {level}
-                    </button>
-                  ))}
+                  {selectableLevels.map((level) => {
+                    const levelCustomers = processedCustomers.filter(
+                      (c) => c.level === level
+                    );
+
+                    const isLevelSelected =
+                      levelCustomers.length > 0 &&
+                      levelCustomers.every((c) =>
+                        selectedCustomers.includes(c.pelanggan_id)
+                      );
+
+                    return (
+                      <button
+                        key={level}
+                        onClick={() => selectByLevel(level)}
+                        className={`px-3 py-1 text-xs rounded-full border whitespace-nowrap ${
+                          isLevelSelected
+                            ? "bg-gradient-to-r from-sky-500 to-sky-600 hover:brightness-110 text-white"
+                            : "bg-gray-100 text-slate-700 border-slate-300 hover:bg-slate-200"
+                        }`}
+                      >
+                        {level}
+                      </button>
+                    );
+                  })}
                 </div>
 
                 {/* List */}
                 <div className="flex flex-col space-y-2 overflow-y-auto max-h-[45vh]">
-                  {sortedCustomers.map((cust) => (
+                  {processedCustomers.map((cust) => (
                     <label
                       key={cust.pelanggan_id}
                       className="flex items-center justify-between p-2 rounded hover:bg-slate-50"
@@ -776,7 +788,7 @@ export default function WaBlast() {
                       </span>
                     </label>
                   ))}
-                  {sortedCustomers.length === 0 && (
+                  {processedCustomers.length === 0 && (
                     <p className="py-4 text-xs text-center text-slate-400">
                       Tidak ada pelanggan
                     </p>
