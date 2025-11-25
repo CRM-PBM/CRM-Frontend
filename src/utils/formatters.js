@@ -1,6 +1,5 @@
 // 1. Fungsi formatCurrency 
 export const formatCurrency = (amount) => {
-    // Memastikan input adalah angka, jika tidak valid akan menjadi 0
     const numericAmount = parseFloat(amount) || 0; 
 
     return new Intl.NumberFormat('id-ID', {

@@ -7,4 +7,5 @@ export const kategoriService = {
     createKategori: (data) => api.post('/kategori', data),
     updateKategori: (id, data) => api.put(`/kategori/${id}`, data),
     deleteKategori: (id) => api.delete(`/kategori/${id}`),
+    getStatistik: () => api.get('/kategori/statistik'),
 };

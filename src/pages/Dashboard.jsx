@@ -7,9 +7,8 @@ import DashboardTopbar from '../components/DashboardTopbar';
 const umkmTitleMap = {
     '/dashboard': 'Ringkasan',
     '/dashboard/customers': 'Manajemen Pelanggan',
-    '/dashboard/products': 'Manajemen Produk',
-    '/dashboard/categories': 'Manajemen Kategori & Jenis Produk',
-    '/dashboard/transactions': 'Pencatatan Transaksi',
+    '/dashboard/product-management': 'Manajemen Produk',
+    '/dashboard/transactions': 'Manajemen Transaksi',
     '/dashboard/wa': 'WA Blast',
     '/dashboard/reports': 'Manajemen Laporan',
 };

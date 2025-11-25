@@ -14,7 +14,7 @@ export default function ProductSummaryCards({ statistics, formatCurrency }) {
           </div>
           <div>
             <p className="text-sm text-slate-600">Total Produk</p>
-            <p className="text-2xl font-bold text-slate-900">{statistics.total_produk || 0}</p>
+            <p className="text-xl font-bold text-slate-900">{statistics.total_produk || 0}</p>
           </div>
         </div>
       </div>
@@ -27,7 +27,7 @@ export default function ProductSummaryCards({ statistics, formatCurrency }) {
           </div>
           <div>
             <p className="text-sm text-slate-600">Produk Aktif</p>
-            <p className="text-2xl font-bold text-slate-900">{statistics.produk_aktif || 0}</p>
+            <p className="text-xl font-bold text-slate-900">{statistics.produk_aktif || 0}</p>
           </div>
         </div>
       </div>
@@ -40,7 +40,7 @@ export default function ProductSummaryCards({ statistics, formatCurrency }) {
           </div>
           <div>
             <p className="text-sm text-slate-600">Total Stok</p>
-            <p className="text-2xl font-bold text-slate-900">{statistics.total_stok || 0}</p>
+            <p className="text-xl font-bold text-slate-900">{statistics.total_stok || 0}</p>
           </div>
         </div>
       </div>
@@ -53,7 +53,7 @@ export default function ProductSummaryCards({ statistics, formatCurrency }) {
           </div>
           <div>
             <p className="text-sm text-slate-600">Nilai Inventori</p>
-            <p className="text-2xl font-bold text-slate-900">
+            <p className="text-xl font-bold text-slate-900">
               {formatCurrency(statistics.nilai_inventori || 0)}
             </p>
           </div>

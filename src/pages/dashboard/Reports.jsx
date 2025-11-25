@@ -31,22 +31,22 @@ export default function Reports() {
     const customerReportTitle = 'LAPORAN PELANGGAN BULANAN';
 
     return (
-        <div className="space-y-6">
-
-            {/* Tab Navigation */}
-            <div className="flex border-b border-slate-200 print:hidden">
-                <TabButton 
-                    label="Laporan Transaksi" 
-                    icon={ShoppingCart} 
-                    isActive={activeTab === 'transaction'} 
-                    onClick={() => setActiveTab('transaction')} 
-                />
-                <TabButton 
-                    label="Laporan Pelanggan" 
-                    icon={Users} 
-                    isActive={activeTab === 'customer'} 
-                    onClick={() => setActiveTab('customer')} 
-                />
+        <div className="space-y-2">
+            <div className="border-b border-slate-200 bg-white rounded-xl shadow-sm">
+                <nav className="-mb-px flex space-x-2 px-3">
+                        <TabButton 
+                            label="Laporan Transaksi" 
+                            icon={ShoppingCart}
+                            isActive={activeTab === 'transaction'} 
+                            onClick={() => setActiveTab('transaction')} 
+                        />
+                        <TabButton 
+                            label="Laporan Pelanggan" 
+                            icon={Users} 
+                            isActive={activeTab === 'customer'} 
+                            onClick={() => setActiveTab('customer')} 
+                        />
+                </nav>
             </div>
 
             {/* Filter Card */}

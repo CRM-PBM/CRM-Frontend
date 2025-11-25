@@ -7,4 +7,5 @@ export const jenisProdukService = {
     createJenis: (data) => api.post('/jenis', data),
     updateJenis: (id, data) => api.put(`/jenis/${id}`, data),
     deleteJenis: (id) => api.delete(`/jenis/${id}`),
+    getStatistikJenis: () => api.get('/jenis/statistik/jenis-produk'),
 };

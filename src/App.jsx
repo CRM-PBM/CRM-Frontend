@@ -22,10 +22,11 @@ import RegisterPage from './pages/RegisterPage';
 import Overview from './pages/dashboard/Overview';
 import Customers from './pages/dashboard/Customers'; 
 import Products from './pages/dashboard/Products';
-import Categories from './pages/dashboard/Categories';
+import CategoriesAndType from './pages/dashboard/CategoriesAndType';
 import Transactions from './pages/dashboard/Transactions';
 import WaBlast from './pages/dashboard/WaBlast'; 
 import Reports from './pages/dashboard/Reports'; 
+import ProductManagement from './pages/dashboard/ManagementProducts';
 
 // Import komponen Admin
 import AdminDashboardPage from './pages/Admin/AdminDashboardPage';
@@ -103,7 +104,8 @@ function App() {
                         {/* Rute anak UMKM */}
                         <Route path="customers" element={<Customers />} />
                         <Route path="products" element={<Products />} />
-                        <Route path="categories" element={<Categories />} />
+                        <Route path="product-management" element={<ProductManagement />} />
+                        <Route path="categories" element={<CategoriesAndType />} />
                         <Route path="transactions" element={<Transactions />} />
                         <Route path="wa" element={<WaBlast />} />
                         <Route path="reports" element={<Reports />} /> 

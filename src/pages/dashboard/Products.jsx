@@ -7,6 +7,8 @@ import ProductSummaryCards from '../../components/Products/ProductSummaryCards'
 import ProductFormModal from '../../components/Products/ProductFormModal'
 import ProductListTable from '../../components/Products/ProductListTable'
 
+import { formatCurrency } from '../../utils/formatters'
+
 export default function Products(){
   // --- States Manajemen Data ---
   const [list, setList] = useState([])
@@ -32,15 +34,6 @@ export default function Products(){
   })
   
   // --- Utility Functions (Dibuat useCallback untuk kinerja) ---
-
-  const formatCurrency = useCallback((value) => {
-    return new Intl.NumberFormat('id-ID', {
-      style: 'currency',
-      currency: 'IDR',
-      minimumFractionDigits: 0
-    }).format(value)
-  }, [])
-
   const getJenisProdukName = useCallback((id) => {
     const jenis = jenisProdukList.find(j => j.jenis_produk_id === id);
     return jenis ? jenis.nama_jenis : 'N/A';
@@ -98,7 +91,6 @@ export default function Products(){
 
   
   // --- Effect Hooks ---
-
   useEffect(() => {
     loadProduk()
     loadStatistics()
@@ -118,7 +110,6 @@ export default function Products(){
 
 
   // --- Modal & Form Handlers ---
-
   const resetForm = () => {
     setForm({
       nama_produk: '',

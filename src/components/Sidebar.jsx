@@ -34,9 +34,8 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen, collapsed, setCol
         // Ringkasan tidak perlu path anak, langsung ke /dashboard
         { path: '/dashboard', label: 'Ringkasan', icon: Home, key: 'overview' },
         { path: '/dashboard/customers', label: 'Pelanggan', icon: Users, key: 'customers' },
-        { path: '/dashboard/products', label: 'Produk', icon: Package, key: 'products' },
-        { path: '/dashboard/categories', label: 'Kategori & Jenis Produk', icon: ShoppingBasket, key: 'categories' },
-        { path: '/dashboard/transactions', label: 'Transaksi', icon: CreditCard, key: 'transactions' },
+        { path: '/dashboard/product-management', label: 'Manajemen Produk', icon: ShoppingBasket, key: 'product-management' },
+        { path: '/dashboard/transactions', label: 'Manajemen Transaksi & POS', icon: CreditCard, key: 'transactions' },
         { path: '/dashboard/wa', label: 'Kirim WA', icon: MessageSquare, key: 'wa' },
         { path: '/dashboard/reports', label: 'Laporan', icon: FileText, key: 'reports' },
     ];
