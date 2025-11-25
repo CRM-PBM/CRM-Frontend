@@ -227,7 +227,7 @@ export default function CategoriesAndTypePage() {
     const unggulanTitle =
         activeSubTab === "kategori"
         ? "Kategori Unggulan"
-        : "Jenis Produk Unggulan";
+        : "Jns Produk Unggulan";
 
     const unggulanValue =
         activeSubTab === "kategori"
@@ -312,7 +312,7 @@ export default function CategoriesAndTypePage() {
                                 placeholder="Nama kategori..."
                                 value={formData.nama_kategori ?? ''}
                                 onChange={(e) => setFormData(prev => ({ ...prev, nama_kategori: e.target.value }))}
-                                className="flex-1 border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-sky-500 focus:outline-none"
+                                className="flex-1 border border-slate-300 rounded-lg px-2 py-1 focus:ring-2 focus:ring-sky-500 focus:outline-none text-sm"
                                 required
                                 />
                                 <input
@@ -320,18 +320,18 @@ export default function CategoriesAndTypePage() {
                                 placeholder="Deskripsi kategori (Opsional)..."
                                 value={formData.deskripsi ?? ''}
                                 onChange={(e) => setFormData(prev => ({ ...prev, deskripsi: e.target.value }))}
-                                className="flex-1 border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-sky-500 focus:outline-none"
+                                className="flex-1 border border-slate-300 rounded-lg px-2 py-1 focus:ring-2 focus:ring-sky-500 focus:outline-none text-sm"
                                 />
                                 <button
                                 type="submit"
-                                className="flex items-center justify-center gap-2 bg-sky-600 hover:bg-sky-700 text-white px-4 py-2 rounded-lg transition"
+                                className="flex items-center justify-center gap-2 bg-sky-600 hover:bg-sky-700 text-white px-2 py-1 rounded-lg transition text-base"
                                 disabled={loading}
                                 >
                                 {editingKategoriId ? <Edit className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
                                 {editingKategoriId ? 'Update' : 'Tambah'}
                                 </button>
                                 {editingKategoriId && (
-                                    <button type="button" onClick={handleCancelEditKategori} className="px-4 py-2 border border-slate-300 bg-white text-slate-600 rounded-lg font-medium hover:bg-slate-50 transition-colors" disabled={loading}>Batal</button>
+                                    <button type="button" onClick={handleCancelEditKategori} className="px-2 py-1 border border-slate-300 bg-white text-slate-600 rounded-lg font-medium hover:bg-slate-50 transition-colors" disabled={loading}>Batal</button>
                                 )}
                             </form>
 
@@ -342,7 +342,7 @@ export default function CategoriesAndTypePage() {
                                     placeholder={`Cari kategori...`}
                                     value={kategoriSearchTerm}
                                     onChange={(e) => setKategoriSearchTerm(e.target.value)}
-                                    className="w-full border border-slate-300 rounded-lg pl-10 pr-4 py-2 focus:ring-2 focus:ring-sky-500 focus:outline-none"
+                                    className="w-full border border-slate-300 rounded-lg pl-10 pr-4 py-1 focus:ring-2 focus:ring-sky-500 focus:outline-none text-sm"
                                 />
                             </div>
 
@@ -359,22 +359,22 @@ export default function CategoriesAndTypePage() {
                                             <th className="px-4 py-3 border-b">No</th>
                                             <th className="px-4 py-3 border-b">Nama Kategori</th>
                                             <th className="px-4 py-3 border-b">Deskripsi</th>
-                                            <th className="px-4 py-3 border-b">Jml. Jenis Produk</th>
+                                            <th className="px-4 py-3 border-b">Jml. Jns Produk</th>
                                             <th className="px-4 py-3 border-b text-right">Aksi</th>
                                         </tr>
                                         </thead>
                                         <tbody>
                                         {filteredCategories.map((kategori, index) => (
                                             <tr key={kategori.kategori_id} className="hover:bg-slate-50">
-                                            <td className="px-4 py-3 border-b">{index + 1}</td>
-                                            <td className="px-4 py-3 border-b">  
+                                            <td className="px-4 py-2 border-b text-sm">{index + 1}</td>
+                                            <td className="px-4 py-2 border-b text-sm">  
                                                 {kategori.nama_kategori}</td>
-                                            <td className="px-4 py-3 border-b">     
+                                            <td className="px-4 py-2 border-b text-sm">     
                                                 {kategori.deskripsi || '-'}</td>
-                                            <td className="px-4 py-3 border-b text-center">
-                                                {kategori.totalJenis ?? 0}
+                                            <td className="px-4 py-2 border-b text-center text-sm">
+                                                {kategori.totalJenis ?? 0} Jenis
                                             </td>
-                                            <td className="px-4 py-3 border-b text-right space-x-2">
+                                            <td className="px-4 py-2 border-b text-right space-x-2">
                                                 <button     
                                                 onClick={() => handleEdit(kategori)}
                                                 className="text-sky-600 hover:text-sky-800"
@@ -404,19 +404,19 @@ export default function CategoriesAndTypePage() {
                                 {editingJenisId ? 'Edit Jenis Produk' : 'Tambah Jenis Produk'}
                             </h3>
 
-                            <form onSubmit={handleJenisSubmit} className="flex flex-col sm:flex-row gap-3 mb-6">
+                            <form onSubmit={handleJenisSubmit} className="flex flex-col sm:flex-row gap-3 mb-5">
                                 <input
                                 type="text"
                                 placeholder="Nama jenis..."
                                 value={jenisForm.nama_jenis}
                                 onChange={(e) => setJenisForm({ ...jenisForm, nama_jenis: e.target.value })}
-                                className="flex-1 border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-sky-500 focus:outline-none"
+                                className="flex-1 border border-slate-300 rounded-lg px-2 py-1 focus:ring-2 focus:ring-sky-500 focus:outline-none text-sm"
                                 required
                                 />
                                 <select
                                 value={jenisForm.kategori_id}
                                 onChange={(e) => setJenisForm({ ...jenisForm, kategori_id: e.target.value })}
-                                className="border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-sky-500 focus:outline-none"
+                                className="border border-slate-300 rounded-lg px-2 py-1 focus:ring-2 focus:ring-sky-500 focus:outline-none text-sm"
                                 required
                                 >
                                 <option value="">Pilih kategori</option>
@@ -428,14 +428,14 @@ export default function CategoriesAndTypePage() {
                                 </select>
                                 <button
                                 type="submit"
-                                className="flex items-center justify-center gap-2 bg-sky-600 hover:bg-sky-700 text-white px-4 py-2 rounded-lg transition"
+                                className="flex items-center justify-center gap-2 bg-sky-600 hover:bg-sky-700 text-white px-2 py-1 rounded-lg transition text-sm"
                                 disabled={loadingJenis}
                                 >
                                 {editingJenisId ? <Edit className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
                                 {editingJenisId ? 'Update' : 'Tambah'}
                                 </button>
                                 {editingJenisId && (
-                                    <button type="button" onClick={handleCancelEditJenis} className="px-4 py-2 border border-slate-300 bg-white text-slate-600 rounded-lg font-medium hover:bg-slate-50 transition-colors" disabled={loadingJenis}>Batal</button>
+                                    <button type="button" onClick={handleCancelEditJenis} className="px-3 py-1 border border-slate-300 bg-white text-slate-600 rounded-lg font-medium hover:bg-slate-50 transition-colors text-sm" disabled={loadingJenis}>Batal</button>
                                 )}
                             </form>
 
@@ -446,7 +446,7 @@ export default function CategoriesAndTypePage() {
                                     placeholder={`Cari jenis produk...`}
                                     value={jenisSearchTerm}
                                     onChange={(e) => setJenisSearchTerm(e.target.value)}
-                                    className="w-full border border-slate-300 rounded-lg pl-10 pr-4 py-2 focus:ring-2 focus:ring-sky-500 focus:outline-none"
+                                    className="w-full border border-slate-300 rounded-lg pl-10 pr-4 py-1 focus:ring-2 focus:ring-sky-500 focus:outline-none"
                                 />
                             </div>
 
@@ -460,25 +460,25 @@ export default function CategoriesAndTypePage() {
                                     <table className="min-w-full text-left border-collapse">
                                         <thead>
                                         <tr className="bg-slate-100 text-slate-700 text-sm">
-                                            <th className="px-4 py-3 border-b">No</th>
-                                            <th className="px-4 py-3 border-b">Nama Jenis</th>
-                                            <th className="px-4 py-3 border-b">Kategori</th>
-                                            <th className="px-4 py-3 border-b">Jml.Produk</th>
-                                            <th className="px-4 py-3 border-b text-right">Aksi</th>
+                                            <th className="px-3 py-2 border-b">No</th>
+                                            <th className="px-3 py-2 border-b">Nama Jenis</th>
+                                            <th className="px-3 py-2 border-b">Kategori</th>
+                                            <th className="px-2 py-2 border-b text-center">Jumlah Produk</th>
+                                            <th className="px-3 py-2 border-b text-right">Aksi</th>
                                         </tr>
                                         </thead>
                                         <tbody>
                                         {filteredJenisList.map((jenis, index) => (
-                                            <tr key={jenis.jenis_produk_id} className="hover:bg-slate-50">
-                                            <td className="px-4 py-3 border-b">{index + 1}.</td>
-                                            <td className="px-4 py-3 border-b text-left">{jenis.nama_jenis}</td>
-                                            <td className="px-4 py-3 border-b">
+                                            <tr key={jenis.jenis_produk_id} className="hover:bg-slate-50 text-sm">
+                                            <td className="px-3 py-2 border-b text-sm">{index + 1}.</td>
+                                            <td className="px-3 py-2 border-b text-left text-sm">{jenis.nama_jenis}</td>
+                                            <td className="px-3 py-2 border-b text-sm">
                                                 {getCategoryName(jenis.kategori_id) || '-'}
                                             </td>
-                                            <td className="px-4 py-3 border-b text-center">
-                                                {jenis.totalProduk ?? 0}
+                                            <td className="px-2 py-2 border-b text-center text-sm">
+                                                {jenis.totalProduk ?? 0} Produk
                                             </td>
-                                            <td className="px-4 py-3 border-b text-right space-x-2">
+                                            <td className="px-3 py-2 border-b text-right space-x-2">
                                                 <button
                                                 onClick={() => handleEditJenis(jenis)}
                                                 className="text-sky-600 hover:text-sky-800"

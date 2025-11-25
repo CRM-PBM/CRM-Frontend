@@ -47,7 +47,7 @@ export default function ProductListTable({
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-x-auto">
         
         {/* Table Header/Summary */}
-        <div className="p-4 border-b border-slate-200 bg-slate-50 lg:min-w-[1119px]">
+        <div className="p-4 border-b border-slate-200 bg-slate-50 lg:min-w-[1135px]">
           <div className="flex items-center justify-between">
             <div>
               <h4 className="font-semibold text-slate-900">Daftar Produk</h4>
@@ -123,42 +123,42 @@ export default function ProductListTable({
               return (
                 <tr key={produk.produk_id} className="hover:bg-slate-50">
                   {/* NO */}
-                  <td className="px-6 py-3 whitespace-nowrap text-sm text-slate-500">
+                  <td className="px-6 py-2 whitespace-nowrap text-sm text-slate-500">
                     {no}.
                   </td>
                   
                   {/* NAMA PRODUK */}
-                  <td className="px-6 py-3 whitespace-nowrap">
+                  <td className="px-6 py-2 whitespace-nowrap">
                     <div className="text-sm font-medium text-slate-900">{produk.nama_produk}</div>
                   </td>
                   
                   {/* KODE PRODUK */}
-                  <td className="px-6 py-3 whitespace-nowrap text-sm text-slate-500 text-center">
+                  <td className="px-6 py-2 whitespace-nowrap text-sm text-slate-500 text-center">
                     {produk.kode_produk || '-'}
                   </td>
 
                   {/* JENIS PRODUK */}
-                  <td className="px-6 py-3 whitespace-nowrap text-sm text-slate-500">
+                  <td className="px-6 py-2 whitespace-nowrap text-sm text-slate-500">
                     {getJenisProdukName(produk.jenis_produk_id)}
                   </td>
 
                   {/* STOK */}
-                  <td className="px-6 py-3 whitespace-nowrap text-sm text-right font-medium text-slate-700">
+                  <td className="px-6 py-2 whitespace-nowrap text-sm text-right font-medium text-slate-700">
                     {produk.stok}
                   </td>
 
                   {/* HARGA */}
-                  <td className="px-6 py-3 whitespace-nowrap text-sm text-right text-slate-700">
+                  <td className="px-6 py-2 whitespace-nowrap text-sm text-right text-slate-700">
                     {formatCurrency(produk.harga)}
                   </td>
 
                   {/* NILAI */}
-                  <td className="px-6 py-3 whitespace-nowrap text-sm text-right font-semibold text-slate-900">
+                  <td className="px-6 py-2 whitespace-nowrap text-sm text-right font-semibold text-slate-900">
                     {formatCurrency(nilaiInventori)}
                   </td>
 
                   {/* STATUS */}
-                  <td className="px-6 py-3 whitespace-nowrap text-sm text-center">
+                  <td className="px-6 py-2 whitespace-nowrap text-sm text-center">
                     <div className="flex flex-col items-center">
                         {produk.aktif ? (
                             <span className="text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-700 font-medium w-max">Aktif</span>
