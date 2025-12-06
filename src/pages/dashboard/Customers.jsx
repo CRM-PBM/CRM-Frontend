@@ -17,7 +17,8 @@ export default function Customers(){
     email: '',
     alamat: '',
     gender: 'Pria',
-    level: 'Bronze'
+    // Level diinisiasi sebagai default, tapi TIDAK dikirim saat CREATE
+    level: 'Bronze' 
   })
   const [editMode, setEditMode] = useState(false)
   const [editId, setEditId] = useState(null)
@@ -71,15 +72,29 @@ export default function Customers(){
 
     setLoading(true)
     try {
+      // Data yang dikirim ke backend. Level hanya dikirim saat edit, 
+      // tetapi di backend Level akan diabaikan atau ditimpa
+      const dataToSave = {
+        nama: form.nama,
+        telepon: form.telepon,
+        email: form.email,
+        alamat: form.alamat,
+        gender: form.gender,
+        // Level TIDAK diikutsertakan di sini, biarkan backend yang menentukan
+      }
+
       if (editMode) {
-        const response = await pelangganService.update(editId, form)
+        // Saat update, kita tetap kirim form.level, meskipun backend mengabaikannya.
+        // Kita tidak menghapus form.level dari form state, hanya untuk tampilan di handleEdit.
+        const response = await pelangganService.update(editId, form) 
         if (response.success) {
           toast.success('Pelanggan berhasil diupdate')
           setEditMode(false)
           setEditId(null)
         }
       } else {
-        const response = await pelangganService.create(form)
+        // Saat create, kita gunakan dataToSave yang tidak menyertakan level
+        const response = await pelangganService.create(dataToSave) 
         if (response.success) {
           toast.success('Pelanggan berhasil ditambahkan')
         }
@@ -136,7 +151,8 @@ export default function Customers(){
       email: pelanggan.email || '',
       alamat: pelanggan.alamat || '',
       gender: pelanggan.gender || 'Pria',
-      level: pelanggan.level || 'Bronze'
+      // Ambil level dari data, hanya untuk ditampilkan
+      level: pelanggan.level || 'Bronze' 
     })
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
@@ -156,7 +172,6 @@ export default function Customers(){
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-2xl font-bold text-slate-900">Manajemen Pelanggan</h3>
@@ -168,7 +183,6 @@ export default function Customers(){
         </div>
       </div>
 
-      {/* Form Card */}
       <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
         <div className="flex items-center gap-2 mb-4">
           <Plus className="h-5 w-5 text-sky-600" />
@@ -179,6 +193,7 @@ export default function Customers(){
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            
             {/* Nama */}
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">
@@ -264,22 +279,25 @@ export default function Customers(){
               </div>
             </div>
 
-            {/* Level */}
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
-                Level Pelanggan
-              </label>
-              <select
-                value={form.level}
-                onChange={e => setForm({...form, level: e.target.value})}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
-              >
-                <option value="Bronze">Bronze</option>
-                <option value="Silver">Silver</option>
-                <option value="Gold">Gold</option>
-                <option value="Platinum">Platinum</option>
-              </select>
-            </div>
+            {/* Level (Hanya Tampil saat Edit dan Disabled) */}
+            {editMode && (
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">
+                    Level Pelanggan (Otomatis)
+                  </label>
+                  <select
+                    value={form.level}
+                    disabled={true} 
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg bg-slate-100 cursor-not-allowed text-slate-600 focus:outline-none focus:ring-0 focus:border-slate-300"
+                  >
+                    <option value="Bronze">Bronze (Otomatis)</option>
+                    <option value="Silver">Silver (Otomatis)</option>
+                    <option value="Gold">Gold (Otomatis)</option>
+                    <option value="Platinum">Platinum (Otomatis)</option>
+                  </select>
+                  <p className="mt-1 text-xs text-slate-500">Level dihitung otomatis berdasarkan transaksi 3 bulan terakhir.</p>
+                </div>
+            )}
           </div>
 
           {/* Form Actions */}
@@ -331,7 +349,7 @@ export default function Customers(){
 
       {/* Customer List Table */}
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-x-auto">
-        <div className="p-4 border-b border-slate-200 bg-slate-50 min-w-[1048px]">
+        <div className="p-4 border-b border-slate-200 bg-slate-50  ">
           <div className="flex items-center justify-between">
             <div>
               <h4 className="font-semibold text-slate-900">Daftar Pelanggan</h4>
@@ -348,7 +366,6 @@ export default function Customers(){
         </div>
 
         <table className="min-w-full divide-y divide-slate-200">
-          {/* TABLE HEADER (THEAD) - Penyesuaian lebar kolom aksi */}
           <thead className="bg-slate-50">
             <tr>
               <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-slate-800 uppercase tracking-wider w-18">
@@ -381,7 +398,6 @@ export default function Customers(){
             </tr>
           </thead>
           
-          {/* TABLE BODY (TBODY) */}
           <tbody className="bg-white divide-y divide-slate-200">
             
             {loading && totalItems === 0 ? (

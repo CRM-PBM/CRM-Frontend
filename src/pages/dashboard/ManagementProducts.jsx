@@ -3,6 +3,7 @@ import { Package, Tag, Layers, Settings } from 'lucide-react';
 
 import ProductsPage from './Products'; 
 import CategoriesAndTypePage from './CategoriesAndType'; 
+import InventoryLogPage from './InventoryLogPage';
 
 export default function ProductManagement() {
   const [activeTab, setActiveTab] = useState('products'); // sebagai default tab
@@ -19,7 +20,14 @@ export default function ProductManagement() {
       label: 'Kategori & Jenis Produk', 
       icon: Layers, 
       Component: CategoriesAndTypePage 
+    },
+    { 
+      id: 'inventori_log', 
+      label: 'Aktivitas Stok', 
+      icon: Layers, 
+      Component: InventoryLogPage 
     }
+
   ];
 
   const ActiveComponent = TABS.find(tab => tab.id === activeTab)?.Component;

@@ -9,7 +9,7 @@ export const formatCurrency = (amount) => {
     }).format(numericAmount);
 };
 
-// 2. Fungsi formatNumber (DITAMBAHKAN dari saran sebelumnya untuk K/M)
+// 2. Fungsi formatNumber 
 export const formatNumber = (value) => {
     const numValue = Number(value);
     if (isNaN(numValue)) return '0';
@@ -75,4 +75,25 @@ export const formatRangeDate = (startDateString, endDateString) => {
     const endPart = end.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
 
     return `${startPart} - ${endPart}`;
+};
+
+// 7. Fungsi Tanggal + Jam
+export const formatTimeStamp = (timestamp) => {
+    if (!timestamp) return 'N/A';
+    try {
+        const date = new Date(timestamp);
+        if (isNaN(date)) return 'Invalid Date';
+
+        const options = { 
+            day: '2-digit', 
+            month: 'short', 
+            year: 'numeric', 
+            hour: '2-digit', 
+            minute: '2-digit',
+            hour12: false
+        };
+        return date.toLocaleDateString('id-ID', options);
+    } catch (error) {
+        console.error("Error formatting timestamp:", error);
+    }
 };
